@@ -41,7 +41,7 @@ fn parse_command(input_string: &str) -> Result<(), CommandParseError> {
 fn match_command(command: &str, args: &str) {
     match command {
         "exit" => exit(args.parse().unwrap_or(-1)),
-        "echo" => print!("{}", args),
+        "echo" => println!("{}", args),
         _ => (),
     }
 }
