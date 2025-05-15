@@ -7,6 +7,11 @@ fn main() {
         print!("$ ");
         io::stdout().flush().unwrap();
         io::stdin().read_line(&mut input).unwrap();
-        println!("{}: command not found", input.trim())
+
+        if input.eq("exit 0") {
+            return;
+        }
+
+        println!("{}: command not found", input.trim());
     }
 }
