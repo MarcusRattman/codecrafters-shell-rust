@@ -8,7 +8,7 @@ fn main() {
         io::stdout().flush().unwrap();
         io::stdin().read_line(&mut input).unwrap();
 
-        if input.eq("exit 0") {
+        if input.trim().eq("exit 0") {
             return;
         }
 
