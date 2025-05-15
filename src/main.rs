@@ -30,8 +30,8 @@ fn parse_command(input_string: &str) -> Result<(), CommandParseError> {
 
     let space_index = space_index.unwrap();
 
-    let command = &input[0..space_index];
-    let args = &input_string[space_index + 1..];
+    let command = input[0..space_index].trim();
+    let args = input_string[space_index + 1..].trim();
 
     match_command(command, args);
 
