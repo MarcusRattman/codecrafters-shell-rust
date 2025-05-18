@@ -47,6 +47,7 @@ fn match_command(command: &str, args: &str) {
             if command_list.contains(&args) {
                 println!("{} is a shell builtin", args)
             }
+            println!("{}: command not found", args)
         }
         _ => (),
     }
