@@ -39,9 +39,15 @@ fn parse_command(input_string: &str) -> Result<(), CommandParseError> {
 }
 
 fn match_command(command: &str, args: &str) {
+    let command_list = ["exit", "echo", "type"];
     match command {
         "exit" => exit(args.parse().unwrap_or(-1)),
         "echo" => println!("{}", args),
+        "type" => {
+            if command_list.contains(&args) {
+                println!("{} is a shell builtin", args)
+            }
+        }
         _ => (),
     }
 }
