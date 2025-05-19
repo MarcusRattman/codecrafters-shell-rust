@@ -1,6 +1,7 @@
-#[allow(unused_imports)]
-use std::io::{self, Error, Write};
-use std::{env, path::Path, process::exit, process::Command};
+use std::env;
+use std::io::{self, Write};
+use std::path::Path;
+use std::process::{exit, Command};
 
 #[derive(Debug)]
 struct CommandParseError(String);
@@ -29,13 +30,21 @@ fn parse_command(input: &str) -> Result<(), CommandParseError> {
             let code: i32 = args.parse().unwrap_or(-1);
             exit(code);
         }
-        "echo" => {
-            println!("{}", args);
-            Ok(())
-        }
+        "echo" => Ok(println!("{}", args)),
         "type" => type_command(args),
+        "pwd" => Ok(println!("{}", pwd_command().unwrap_or_default())),
         _ => run_binary(command, args),
     }
+}
+
+fn pwd_command() -> Result<String, CommandParseError> {
+    let dir = env::current_dir();
+
+    if let Ok(dir) = dir {
+        return Ok(dir.to_str().unwrap().to_string());
+    }
+
+    Err(CommandParseError("Incorrect directory".to_string()))
 }
 
 fn type_command(command: &str) -> Result<(), CommandParseError> {
