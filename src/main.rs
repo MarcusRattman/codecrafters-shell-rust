@@ -38,35 +38,12 @@ fn parse_command(input: &str) -> Result<String, CommandParseError> {
     let command = parts.next().unwrap_or("");
     let args = parts.next().unwrap_or("");
 
-    let mut args_vec = Vec::<String>::new();
-    let mut started = false;
-    let mut current_arg = String::new();
-
-    args.chars().for_each(|c| {
-        if c.eq(&'\'') {
-            started = !started;
-        }
-
-        if started && c.ne(&'\'') {
-            current_arg.push(c);
-        }
-
-        if !started && !current_arg.is_empty() {
-            args_vec.push(current_arg.clone());
-            current_arg.clear();
-        }
-    });
-
-    if args_vec.is_empty() {
-        args_vec.push(args.split_whitespace().collect::<Vec<&str>>().join(" "));
-    }
-
     match command {
         "exit" => {
-            let code: i32 = args_vec[0].parse().unwrap_or(-1);
+            let code: i32 = args.parse().unwrap_or(-1);
             exit(code);
         }
-        "echo" => Ok(format!("{}", args_vec.join(" "))),
+        "echo" => Ok(format!("{}", args)),
         "type" => type_command(args),
         "pwd" => pwd_command(),
         "cd" => cd_command(args),
