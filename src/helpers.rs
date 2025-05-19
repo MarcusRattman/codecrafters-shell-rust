@@ -26,7 +26,7 @@ fn parse_args(args: &str) -> String {
     let mut enclosed = false;
 
     if !args.contains("'") {
-        return args.to_string();
+        return args.split_whitespace().collect();
     }
 
     args.chars().for_each(|c| {
