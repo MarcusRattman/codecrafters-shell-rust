@@ -14,13 +14,21 @@ fn main() {
         io::stdin().read_line(&mut input).unwrap();
 
         let result = parse_command(&input);
-        if let Err(e) = result {
-            println!("{}", e.0);
+
+        match result {
+            Ok(val) => {
+                if val.len() > 0 {
+                    println!("{}", val);
+                }
+            }
+            Err(e) => println!("{}", e.0),
         }
     }
 }
 
-fn parse_command(input: &str) -> Result<(), CommandParseError> {
+const BUILTINS: &[&str] = &["exit", "echo", "type", "pwd"];
+
+fn parse_command(input: &str) -> Result<String, CommandParseError> {
     let mut parts = input.trim().splitn(2, ' ');
     let command = parts.next().unwrap_or("");
     let args = parts.next().unwrap_or("");
@@ -30,9 +38,9 @@ fn parse_command(input: &str) -> Result<(), CommandParseError> {
             let code: i32 = args.parse().unwrap_or(-1);
             exit(code);
         }
-        "echo" => Ok(println!("{}", args)),
+        "echo" => Ok(format!("{}", args)),
         "type" => type_command(args),
-        "pwd" => Ok(println!("{}", pwd_command().unwrap_or_default())),
+        "pwd" => pwd_command(),
         _ => run_binary(command, args),
     }
 }
@@ -47,17 +55,15 @@ fn pwd_command() -> Result<String, CommandParseError> {
     Err(CommandParseError("Incorrect directory".to_string()))
 }
 
-fn type_command(command: &str) -> Result<(), CommandParseError> {
-    let builtin = ["exit", "echo", "type", "pwd"];
-
+fn type_command(command: &str) -> Result<String, CommandParseError> {
     let binaries = get_binaries().unwrap();
 
-    if builtin.contains(&command) {
-        return Ok(println!("{} is a shell builtin", command));
+    if BUILTINS.contains(&command) {
+        return Ok(format!("{} is a shell builtin", command));
     }
 
     if let Some(binary) = binaries.iter().find(|binary| binary.name.eq(command)) {
-        return Ok(println!("{} is {}", command, binary.path));
+        return Ok(format!("{} is {}", command, binary.path));
     }
 
     let error_msg = format!("{}: not found", command);
@@ -69,13 +75,20 @@ struct Binary {
     name: String,
 }
 
-fn run_binary(command: &str, args: &str) -> Result<(), CommandParseError> {
+fn run_binary(command: &str, args: &str) -> Result<String, CommandParseError> {
     let binaries = get_binaries().unwrap();
 
     if binaries.iter().find(|bin| bin.name.eq(command)).is_some() {
-        let test = Command::new(command).arg(args).output().unwrap();
-        io::stdout().write_all(&test.stdout).unwrap();
-        Ok(())
+        let exec = Command::new(command).arg(args).output();
+
+        if let Ok(output) = exec {
+            let result = String::from_utf8(output.stdout).unwrap();
+            return Ok(result);
+        }
+
+        Err(CommandParseError(
+            "Error while running the binary".to_string(),
+        ))
     } else {
         let error_msg = format!("{}: command not found", command);
         Err(CommandParseError(error_msg))
