@@ -15,7 +15,10 @@ fn main() {
         let result = parse_command(&input);
 
         if let Err(_) = result {
-            println!("{}: command not found", input.trim());
+            println!(
+                "{}: command not found",
+                input.trim().split(" ").collect::<Vec<&str>>()[0]
+            );
         }
     }
 }
