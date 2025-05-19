@@ -38,7 +38,7 @@ fn parse_command(input: &str) -> Result<String, CommandParseError> {
     let command = parts.next().unwrap_or("").trim();
     let args = parts.next().unwrap_or("").trim();
 
-    let mut args_vec = Vec::<String>::new();
+    let mut args_vec = String::new();
     let mut started = false;
     let mut current_arg = String::new();
 
@@ -52,21 +52,21 @@ fn parse_command(input: &str) -> Result<String, CommandParseError> {
         }
 
         if !started && !current_arg.is_empty() {
-            args_vec.push(current_arg.clone());
+            args_vec.push_str(&current_arg);
             current_arg.clear();
         }
     });
 
     if args_vec.is_empty() {
-        args_vec.push(args.split_whitespace().collect::<Vec<&str>>().join(" "));
+        args_vec.push_str(args);
     }
 
     match command {
         "exit" => {
-            let code: i32 = args_vec[0].parse().unwrap_or(-1);
+            let code: i32 = args_vec.parse().unwrap_or(-1);
             exit(code);
         }
-        "echo" => Ok(format!("{}", args_vec.join(" "))),
+        "echo" => Ok(format!("{}", args_vec)),
         "type" => type_command(args),
         "pwd" => pwd_command(),
         "cd" => cd_command(args),
