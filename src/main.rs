@@ -54,10 +54,7 @@ fn type_command(command: &str) {
 
     if builtin.contains(&command) {
         println!("{} is a shell builtin", command);
-    }
-
-    let binary_exists = binaries.iter().find(|binary| binary.name.eq(command));
-    if let Some(binary) = binary_exists {
+    } else if let Some(binary) = binaries.iter().find(|binary| binary.name.eq(command)) {
         println!("{} is {}", command, binary.path);
     } else {
         println!("{}: not found", command);
