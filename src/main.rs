@@ -3,7 +3,7 @@ use std::io::{self, Error, Write};
 use std::{env, path::Path, process::exit, process::Command};
 
 #[derive(Debug)]
-struct CommandParseError;
+struct CommandParseError(String);
 
 fn main() {
     loop {
@@ -13,13 +13,16 @@ fn main() {
         io::stdin().read_line(&mut input).unwrap();
 
         let result = parse_command(&input);
+        if let Err(e) = result {
+            println!("{}", e.0);
+        }
     }
 }
 
 fn parse_command(input: &str) -> Result<(), CommandParseError> {
     let input = input.trim();
     let mut parts = input.splitn(2, ' ');
-    let command = parts.next().ok_or(CommandParseError)?;
+    let command = parts.next().ok_or(CommandParseError(String::new()))?;
     let args = parts.next().unwrap_or("");
 
     match_command(command, args)
@@ -50,8 +53,8 @@ fn type_command(command: &str) -> Result<(), CommandParseError> {
         return Ok(println!("{} is {}", command, binary.path));
     }
 
-    println!("{}: not found", command);
-    Err(CommandParseError)
+    let error_msg = format!("{}: not found", command);
+    Err(CommandParseError(error_msg))
 }
 
 struct Binary {
@@ -67,7 +70,8 @@ fn run_binary(command: &str, args: &str) -> Result<(), CommandParseError> {
         io::stdout().write_all(&test.stdout).unwrap();
         Ok(())
     } else {
-        Err(CommandParseError)
+        let error_msg = format!("{}: command not found", command);
+        Err(CommandParseError(error_msg))
     }
 }
 
