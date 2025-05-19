@@ -63,9 +63,9 @@ struct Binary {
 }
 
 fn run_binary(command: &str, args: &str) {
-    let path_var = env::var("PATH");
+    let binaries = get_binaries().unwrap();
 
-    if let Ok(path) = path_var {
+    if binaries.iter().find(|bin| bin.name.eq(command)).is_some() {
         let test = Command::new(command).arg(args).output().unwrap();
         io::stdout().write_all(&test.stdout).unwrap();
     }
