@@ -6,6 +6,11 @@ use std::process::{exit, Command};
 #[derive(Debug)]
 struct CommandParseError(String);
 
+struct Binary {
+    path: String,
+    name: String,
+}
+
 fn main() {
     loop {
         let mut input = String::new();
@@ -26,7 +31,7 @@ fn main() {
     }
 }
 
-const BUILTINS: &[&str] = &["exit", "echo", "type", "pwd"];
+const BUILTINS: &[&str] = &["exit", "echo", "type", "pwd", "cd"];
 
 fn parse_command(input: &str) -> Result<String, CommandParseError> {
     let mut parts = input.trim().splitn(2, ' ');
@@ -41,8 +46,22 @@ fn parse_command(input: &str) -> Result<String, CommandParseError> {
         "echo" => Ok(format!("{}", args)),
         "type" => type_command(args),
         "pwd" => pwd_command(),
+        "cd" => cd_command(args),
         _ => run_binary(command, args),
     }
+}
+
+fn cd_command(args: &str) -> Result<String, CommandParseError> {
+    let path = Path::new(args);
+    let cd = env::set_current_dir(path);
+
+    if cd.is_err() {
+        return Err(CommandParseError(
+            "Cannot cd into a nonexistent directory".to_string(),
+        ));
+    }
+
+    Ok("".to_string())
 }
 
 fn pwd_command() -> Result<String, CommandParseError> {
@@ -70,13 +89,9 @@ fn type_command(command: &str) -> Result<String, CommandParseError> {
     Err(CommandParseError(error_msg))
 }
 
-struct Binary {
-    path: String,
-    name: String,
-}
-
 fn run_binary(command: &str, args: &str) -> Result<String, CommandParseError> {
     let binaries = get_binaries().unwrap();
+    let error_msg: String;
 
     if binaries.iter().find(|bin| bin.name.eq(command)).is_some() {
         let exec = Command::new(command).arg(args).output();
@@ -86,11 +101,10 @@ fn run_binary(command: &str, args: &str) -> Result<String, CommandParseError> {
             return Ok(result);
         }
 
-        Err(CommandParseError(
-            "Error while running the binary".to_string(),
-        ))
+        error_msg = "Error while running the binary".to_string();
+        Err(CommandParseError(error_msg))
     } else {
-        let error_msg = format!("{}: command not found", command);
+        error_msg = format!("{}: command not found", command);
         Err(CommandParseError(error_msg))
     }
 }
