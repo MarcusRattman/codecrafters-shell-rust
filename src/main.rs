@@ -58,11 +58,11 @@ fn parse_args(args: &str) -> String {
     let mut enclosed = false;
 
     args.chars().for_each(|c| {
-        if c.eq(&'\'') {
+        if c.eq(&'\'') || c.is_whitespace() {
             enclosed = !enclosed;
         }
 
-        if c.ne(&'\'') {
+        if c.ne(&'\'') && enclosed {
             result.push(c);
         }
     });
