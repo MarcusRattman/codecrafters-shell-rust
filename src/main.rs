@@ -34,43 +34,36 @@ fn main() {
 const BUILTINS: &[&str] = &["exit", "echo", "type", "pwd", "cd"];
 
 fn parse_command(input: &str) -> Result<String, CommandParseError> {
-    let mut parts = input.trim().splitn(2, ' ');
+    let input = input.trim();
+
+    // Split into command and the rest
+    let mut parts = input.splitn(2, ' ');
     let command = parts.next().unwrap_or("").trim();
-    let args = parts.next().unwrap_or("").trim();
+    let args_str = parts.next().unwrap_or("").trim();
 
-    let mut args_vec = String::new();
-    let mut started = false;
-    let mut current_arg = String::new();
-
-    args.chars().for_each(|c| {
-        if c.eq(&'\'') {
-            started = !started;
+    // Function to extract argument possibly enclosed in single quotes
+    fn parse_args(s: &str) -> String {
+        let s = s.trim();
+        if s.starts_with('\'') && s.ends_with('\'') && s.len() >= 2 {
+            // Remove the surrounding single quotes
+            s[1..s.len() - 1].to_string()
+        } else {
+            s.to_string()
         }
-
-        if started && c.ne(&'\'') {
-            current_arg.push(c);
-        }
-
-        if !started && !current_arg.is_empty() {
-            args_vec.push_str(&current_arg);
-            current_arg.clear();
-        }
-    });
-
-    if args_vec.is_empty() {
-        args_vec.push_str(&args.split_whitespace().collect::<Vec<&str>>().join(" "));
     }
+
+    let args = parse_args(args_str);
 
     match command {
         "exit" => {
-            let code: i32 = args_vec.parse().unwrap_or(-1);
-            exit(code);
+            let code: i32 = args.parse().unwrap_or(-1);
+            std::process::exit(code);
         }
-        "echo" => Ok(format!("{}", args_vec)),
-        "type" => type_command(args),
+        "echo" => Ok(format!("{}", args)),
+        "type" => type_command(&args),
         "pwd" => pwd_command(),
-        "cd" => cd_command(args),
-        _ => run_binary(command, args),
+        "cd" => cd_command(&args),
+        _ => run_binary(command, &args),
     }
 }
 
