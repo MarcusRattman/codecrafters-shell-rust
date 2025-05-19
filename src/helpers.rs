@@ -34,7 +34,7 @@ fn parse_args(args: &str) -> String {
             enclosed = !enclosed;
         }
 
-        if c.ne(&'\'') && enclosed {
+        if c.ne(&'\'') {
             result.push(c);
         }
     });
