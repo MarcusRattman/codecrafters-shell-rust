@@ -35,24 +35,39 @@ const BUILTINS: &[&str] = &["exit", "echo", "type", "pwd", "cd"];
 
 fn parse_command(input: &str) -> Result<String, CommandParseError> {
     let mut parts = input.trim().splitn(2, ' ');
+    let mut args_vec = Vec::<String>::new();
+
     let command = parts.next().unwrap_or("");
-    let args = parts
-        .next()
-        .unwrap_or("")
-        .split_whitespace()
-        .map(|arg| arg.trim_matches(['\"', '\'']))
-        .collect::<Vec<&str>>();
+    let args = parts.next().unwrap_or("");
+
+    let mut started = false;
+    let mut current_arg = String::new();
+
+    args.chars().for_each(|c| {
+        if c.eq(&'\'') {
+            started = !started;
+        }
+
+        if started && c.ne(&'\'') {
+            current_arg.push(c);
+        }
+
+        if !started && !current_arg.is_empty() {
+            args_vec.push(current_arg.clone());
+            current_arg.clear();
+        }
+    });
 
     match command {
         "exit" => {
-            let code: i32 = args.first().unwrap().parse().unwrap_or(-1);
+            let code: i32 = args.parse().unwrap_or(-1);
             exit(code);
         }
-        "echo" => Ok(format!("{}", args.join(" "))),
-        "type" => type_command(&args.join(" ")),
+        "echo" => Ok(format!("{}", args)),
+        "type" => type_command(args),
         "pwd" => pwd_command(),
-        "cd" => cd_command(&args.join(" ")),
-        _ => run_binary(command, &args.join(" ")),
+        "cd" => cd_command(args),
+        _ => run_binary(command, args),
     }
 }
 
