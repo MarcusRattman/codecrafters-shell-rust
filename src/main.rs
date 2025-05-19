@@ -66,41 +66,34 @@ struct Binary {
     name: String,
 }
 
-fn get_binaries() -> Result<Vec<Binary>, Error> {
-    let path_var = env::var("PATH");
+fn get_binaries() -> io::Result<Vec<Binary>> {
+    let path_var = env::var("PATH").unwrap_or_default();
 
-    match path_var {
-        Ok(path) => {
-            let mut binaries = Vec::<Binary>::new();
-
-            let paths = path
-                .split(":")
-                .map(|test| Path::new(test))
-                .filter(|path| path.exists() && path.is_dir())
-                .collect::<Vec<&Path>>();
-
-            for path in paths {
-                for entry in path.read_dir()? {
-                    let entry = entry?;
-                    if entry.path().is_dir() {
-                        continue;
-                    }
-
-                    let binary_path = entry.path().to_str().unwrap().to_string();
-                    let binary_name = entry.file_name().to_str().unwrap().to_string();
-
-                    let bin = Binary {
-                        path: binary_path,
-                        name: binary_name,
-                    };
-
-                    binaries.push(bin);
-                }
+    let binaries = path_var
+        .split(':')
+        .filter_map(|dir| {
+            let dir_path = Path::new(dir);
+            if dir_path.exists() && dir_path.is_dir() {
+                dir_path.read_dir().ok()
+            } else {
+                None
             }
+        })
+        .flatten()
+        .filter_map(|entry| {
+            let path = entry.unwrap().path();
+            if path.is_file() {
+                let path_str = path.to_str()?.to_string();
+                let name = path.file_name()?.to_str()?.to_string();
+                Some(Binary {
+                    path: path_str,
+                    name,
+                })
+            } else {
+                None
+            }
+        })
+        .collect();
 
-            return Ok(binaries);
-        }
-
-        Err(_) => Ok(vec![]),
-    }
+    Ok(binaries)
 }
