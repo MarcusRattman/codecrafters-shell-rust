@@ -25,6 +25,10 @@ fn parse_args(args: &str) -> String {
     let mut result = String::new();
     let mut enclosed = false;
 
+    if !args.contains("'") {
+        return args.to_string();
+    }
+
     args.chars().for_each(|c| {
         if c.eq(&'\'') {
             enclosed = !enclosed;
