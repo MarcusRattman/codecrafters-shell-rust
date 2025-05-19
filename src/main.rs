@@ -26,35 +26,36 @@ fn parse_command(input: &str) -> Result<(), CommandParseError> {
     let command = parts.next().ok_or(CommandParseError)?;
     let args = parts.next().unwrap_or("");
 
-    match_command(command, args);
-    Ok(())
+    match_command(command, args)
 }
 
-fn match_command(command: &str, args: &str) {
+fn match_command(command: &str, args: &str) -> Result<(), CommandParseError> {
     match command {
         "exit" => exit(args.parse().unwrap_or(-1)),
-        "echo" => println!("{}", args),
+        "echo" => {
+            println!("{}", args);
+            Ok(())
+        }
         "type" => type_command(args),
         _ => run_binary(command, args),
     }
 }
 
-fn type_command(command: &str) {
+fn type_command(command: &str) -> Result<(), CommandParseError> {
     let builtin = ["exit", "echo", "type"];
 
     let binaries = get_binaries().unwrap();
 
     if builtin.contains(&command) {
-        println!("{} is a shell builtin", command);
-        return;
+        return Ok(println!("{} is a shell builtin", command));
     }
 
     if let Some(binary) = binaries.iter().find(|binary| binary.name.eq(command)) {
-        println!("{} is {}", command, binary.path);
-        return;
+        return Ok(println!("{} is {}", command, binary.path));
     }
 
-    println!("{}: not found", command);
+    //println!("{}: not found", command);
+    Err(CommandParseError)
 }
 
 struct Binary {
@@ -62,12 +63,15 @@ struct Binary {
     name: String,
 }
 
-fn run_binary(command: &str, args: &str) {
+fn run_binary(command: &str, args: &str) -> Result<(), CommandParseError> {
     let binaries = get_binaries().unwrap();
 
     if binaries.iter().find(|bin| bin.name.eq(command)).is_some() {
         let test = Command::new(command).arg(args).output().unwrap();
         io::stdout().write_all(&test.stdout).unwrap();
+        Ok(())
+    } else {
+        Err(CommandParseError)
     }
 }
 
