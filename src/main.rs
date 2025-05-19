@@ -67,7 +67,7 @@ fn run_binary(command: &str, args: &str) {
 
     if let Ok(path) = path_var {
         let test = Command::new(command).arg(args).output().unwrap();
-        println!("{:?}", test.stdout)
+        io::stdout().write_all(&test.stdout).unwrap();
     }
 }
 
