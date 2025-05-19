@@ -58,7 +58,7 @@ fn parse_command(input: &str) -> Result<String, CommandParseError> {
     });
 
     if args_vec.is_empty() {
-        args_vec.push(args.split_whitespace().collect());
+        args_vec.push(args.split_whitespace().collect::<Vec<&str>>().join(" "));
     }
 
     match command {
