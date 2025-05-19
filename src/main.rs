@@ -20,17 +20,15 @@ fn main() {
 }
 
 fn parse_command(input: &str) -> Result<(), CommandParseError> {
-    let input = input.trim();
-    let mut parts = input.splitn(2, ' ');
-    let command = parts.next().ok_or(CommandParseError(String::new()))?;
+    let mut parts = input.trim().splitn(2, ' ');
+    let command = parts.next().unwrap_or("");
     let args = parts.next().unwrap_or("");
 
-    match_command(command, args)
-}
-
-fn match_command(command: &str, args: &str) -> Result<(), CommandParseError> {
     match command {
-        "exit" => exit(args.parse().unwrap_or(-1)),
+        "exit" => {
+            let code: i32 = args.parse().unwrap_or(-1);
+            exit(code);
+        }
         "echo" => {
             println!("{}", args);
             Ok(())
