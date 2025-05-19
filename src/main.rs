@@ -62,7 +62,7 @@ fn parse_command(input: &str) -> Result<String, CommandParseError> {
             let code: i32 = args_vec[0].parse().unwrap_or(-1);
             exit(code);
         }
-        "echo" => Ok(format!("{:?}", args_vec)),
+        "echo" => Ok(format!("{}", args_vec.join(" "))),
         "type" => type_command(args),
         "pwd" => pwd_command(),
         "cd" => cd_command(args),
