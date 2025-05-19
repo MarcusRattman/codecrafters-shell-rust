@@ -35,11 +35,10 @@ const BUILTINS: &[&str] = &["exit", "echo", "type", "pwd", "cd"];
 
 fn parse_command(input: &str) -> Result<String, CommandParseError> {
     let mut parts = input.trim().splitn(2, ' ');
-    let mut args_vec = Vec::<String>::new();
-
     let command = parts.next().unwrap_or("");
     let args = parts.next().unwrap_or("");
 
+    let mut args_vec = Vec::<String>::new();
     let mut started = false;
     let mut current_arg = String::new();
 
@@ -60,10 +59,10 @@ fn parse_command(input: &str) -> Result<String, CommandParseError> {
 
     match command {
         "exit" => {
-            let code: i32 = args.parse().unwrap_or(-1);
+            let code: i32 = args_vec[0].parse().unwrap_or(-1);
             exit(code);
         }
-        "echo" => Ok(format!("{}", args)),
+        "echo" => Ok(format!("{:?}", args_vec)),
         "type" => type_command(args),
         "pwd" => pwd_command(),
         "cd" => cd_command(args),
