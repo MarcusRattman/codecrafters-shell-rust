@@ -48,7 +48,7 @@ fn pwd_command() -> Result<String, CommandParseError> {
 }
 
 fn type_command(command: &str) -> Result<(), CommandParseError> {
-    let builtin = ["exit", "echo", "type"];
+    let builtin = ["exit", "echo", "type", "pwd"];
 
     let binaries = get_binaries().unwrap();
 
