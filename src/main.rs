@@ -56,9 +56,8 @@ fn cd_command(args: &str) -> Result<String, CommandParseError> {
     let cd = env::set_current_dir(path);
 
     if cd.is_err() {
-        return Err(CommandParseError(
-            "Cannot cd into a nonexistent directory".to_string(),
-        ));
+        let error_msg = format!("cd: {}: No such file or directory", path.display());
+        return Err(CommandParseError(error_msg));
     }
 
     Ok("".to_string())
