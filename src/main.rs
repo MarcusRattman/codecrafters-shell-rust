@@ -34,78 +34,40 @@ fn main() {
 const BUILTINS: &[&str] = &["exit", "echo", "type", "pwd", "cd"];
 
 fn parse_command(input: &str) -> Result<String, CommandParseError> {
-    let input = input.trim();
-
-    // Split into command and args
-    let mut parts = input.splitn(2, ' ');
+    let mut parts = input.trim().splitn(2, ' ');
     let command = parts.next().unwrap_or("").trim();
-    let args_str = parts.next().unwrap_or("").trim();
-
-    // Function to parse args respecting single quotes
-    fn tokenize_args(s: &str) -> Vec<String> {
-        let mut args = Vec::new();
-        let mut current = String::new();
-        let mut in_quotes = false;
-        let mut chars = s.chars().peekable();
-
-        while let Some(c) = chars.next() {
-            match c {
-                '\'' => {
-                    in_quotes = !in_quotes;
-                }
-                ' ' if !in_quotes => {
-                    if !current.is_empty() {
-                        args.push(current);
-                        current = String::new();
-                    }
-                }
-                _ => {
-                    current.push(c);
-                }
-            }
-        }
-        if !current.is_empty() {
-            args.push(current);
-        }
-
-        // Remove surrounding quotes from args if present
-        args.into_iter()
-            .map(|arg| {
-                let arg = arg.trim();
-                if arg.starts_with('\'') && arg.ends_with('\'') && arg.len() >= 2 {
-                    arg[1..arg.len() - 1].to_string()
-                } else {
-                    arg.to_string()
-                }
-            })
-            .collect()
-    }
-
-    let args = tokenize_args(args_str);
+    let args = parts.next().unwrap_or("").trim();
+    let args = &parse_args(args);
 
     match command {
         "exit" => {
-            let code: i32 = args.first().and_then(|s| s.parse().ok()).unwrap_or(-1);
-            std::process::exit(code);
+            let code: i32 = args.parse().unwrap_or(-1);
+            exit(code);
         }
-        "echo" => Ok(args.join(" ")),
-        "type" => {
-            // Assuming type_command takes &str (the entire args string)
-            // or modify as needed
-            let args_str = args.join(" ");
-            type_command(&args_str)
-        }
+        "echo" => Ok(format!("{}", args)),
+        "type" => type_command(args),
         "pwd" => pwd_command(),
-        "cd" => {
-            let path = args.join(" ");
-            cd_command(&path)
-        }
-        _ => {
-            // Pass command and args as needed
-            // For example, passing command and full args string
-            run_binary(command, &args.join(" "))
-        }
+        "cd" => cd_command(args),
+        _ => run_binary(command, args),
     }
+}
+
+fn parse_args(args: &str) -> String {
+    let args = args.trim();
+    let mut result = String::new();
+    let mut enclosed = false;
+
+    args.chars().for_each(|c| {
+        if c.eq(&'\'') {
+            enclosed = !enclosed;
+        }
+
+        if c.ne(&'\'') {
+            result.push(c);
+        }
+    });
+
+    result
 }
 
 fn cd_command(args: &str) -> Result<String, CommandParseError> {
