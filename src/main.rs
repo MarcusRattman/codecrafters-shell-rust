@@ -97,7 +97,7 @@ fn run_binary(command: &str, args: &str) -> Result<String, CommandParseError> {
 
         if let Ok(output) = exec {
             let result = String::from_utf8(output.stdout).unwrap();
-            return Ok(result);
+            return Ok(result.trim().to_string());
         }
 
         error_msg = "Error while running the binary".to_string();
