@@ -1,6 +1,6 @@
 #[allow(unused_imports)]
 use std::io::{self, Error, Write};
-use std::{env, path::Path, process::exit};
+use std::{env, path::Path, process::exit, process::Command};
 
 #[derive(Debug)]
 struct CommandParseError;
@@ -20,22 +20,14 @@ fn main() {
     }
 }
 
-fn parse_command(input_string: &str) -> Result<(), CommandParseError> {
-    let input = input_string.trim();
-    let space_index = input.find(" ");
-
-    if let None = space_index {
-        return Err(CommandParseError);
-    }
-
-    let space_index = space_index.unwrap();
-
-    let command = input[0..space_index].trim();
-    let args = input_string[space_index + 1..].trim();
+fn parse_command(input: &str) -> Result<(), CommandParseError> {
+    let input = input.trim();
+    let mut parts = input.splitn(2, ' ');
+    let command = parts.next().ok_or(CommandParseError)?;
+    let args = parts.next().unwrap_or("");
 
     match_command(command, args);
-
-    return Ok(());
+    Ok(())
 }
 
 fn match_command(command: &str, args: &str) {
@@ -43,7 +35,7 @@ fn match_command(command: &str, args: &str) {
         "exit" => exit(args.parse().unwrap_or(-1)),
         "echo" => println!("{}", args),
         "type" => type_command(args),
-        _ => (),
+        _ => run_binary(command, args),
     }
 }
 
@@ -54,16 +46,29 @@ fn type_command(command: &str) {
 
     if builtin.contains(&command) {
         println!("{} is a shell builtin", command);
-    } else if let Some(binary) = binaries.iter().find(|binary| binary.name.eq(command)) {
-        println!("{} is {}", command, binary.path);
-    } else {
-        println!("{}: not found", command);
+        return;
     }
+
+    if let Some(binary) = binaries.iter().find(|binary| binary.name.eq(command)) {
+        println!("{} is {}", command, binary.path);
+        return;
+    }
+
+    println!("{}: not found", command);
 }
 
 struct Binary {
     path: String,
     name: String,
+}
+
+fn run_binary(command: &str, args: &str) {
+    let path_var = env::var("PATH");
+
+    if let Ok(path) = path_var {
+        let test = Command::new(command).arg(args).output().unwrap();
+        println!("{:?}", test.stdout)
+    }
 }
 
 fn get_binaries() -> io::Result<Vec<Binary>> {
