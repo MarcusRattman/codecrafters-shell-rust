@@ -52,10 +52,12 @@ fn parse_command(input: &str) -> Result<String, CommandParseError> {
 }
 
 fn cd_command(args: &str) -> Result<String, CommandParseError> {
-    let home = env::var("HOME");
+    let home = env::var("HOME").unwrap();
 
-    let path = if let Ok(home) = home {
-        Path::new(&format!("{}{}", home, args)).to_path_buf()
+    let path = if args.trim() == "~" {
+        Path::new(&home).to_path_buf()
+    } else if args.starts_with("~") {
+        Path::new(&home).join(&args[1..])
     } else {
         Path::new(args).to_path_buf()
     };
