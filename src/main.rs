@@ -52,15 +52,20 @@ fn parse_command(input: &str) -> Result<String, CommandParseError> {
 }
 
 fn cd_command(args: &str) -> Result<String, CommandParseError> {
-    let path = Path::new(args);
-    let cd = env::set_current_dir(path);
+    let home = env::var("HOME").unwrap();
 
-    if cd.is_err() {
-        let error_msg = format!("cd: {}: No such file or directory", path.display());
-        return Err(CommandParseError(error_msg));
-    }
+    let path = if args.trim() == "~" {
+        Path::new(&home).to_path_buf()
+    } else if args.starts_with("~") {
+        Path::new(&home).join(&args[1..])
+    } else {
+        Path::new(args).to_path_buf()
+    };
 
-    Ok("".to_string())
+    env::set_current_dir(&path)
+        .map_err(|e| CommandParseError(format!("cd: {}: {}", path.display(), e)))?;
+
+    Ok(String::new())
 }
 
 fn pwd_command() -> Result<String, CommandParseError> {
@@ -96,8 +101,8 @@ fn run_binary(command: &str, args: &str) -> Result<String, CommandParseError> {
         let exec = Command::new(command).arg(args).output();
 
         if let Ok(output) = exec {
-            let result = String::from_utf8(output.stdout).unwrap();
-            return Ok(result.trim().to_string());
+            let result = String::from_utf8(output.stdout).unwrap().trim().to_string();
+            return Ok(result);
         }
 
         error_msg = "Error while running the binary".to_string();
