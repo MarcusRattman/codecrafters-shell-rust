@@ -13,13 +13,6 @@ fn main() {
         io::stdin().read_line(&mut input).unwrap();
 
         let result = parse_command(&input);
-
-        if let Err(_) = result {
-            println!(
-                "{}: command not found",
-                input.trim().split(" ").collect::<Vec<&str>>()[0]
-            );
-        }
     }
 }
 
@@ -57,7 +50,7 @@ fn type_command(command: &str) -> Result<(), CommandParseError> {
         return Ok(println!("{} is {}", command, binary.path));
     }
 
-    //println!("{}: not found", command);
+    println!("{}: not found", command);
     Err(CommandParseError)
 }
 
