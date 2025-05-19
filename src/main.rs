@@ -62,8 +62,12 @@ fn cd_command(args: &str) -> Result<String, CommandParseError> {
         Path::new(args).to_path_buf()
     };
 
-    env::set_current_dir(&path)
-        .map_err(|e| CommandParseError(format!("cd: {}: {}", path.display(), e)))?;
+    let cd = env::set_current_dir(&path);
+
+    if cd.is_err() {
+        let error_msg = format!("cd: {}: No such file or directory", path.display());
+        return Err(CommandParseError(error_msg));
+    }
 
     Ok(String::new())
 }
