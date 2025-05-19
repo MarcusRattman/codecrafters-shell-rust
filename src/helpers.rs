@@ -41,3 +41,33 @@ fn parse_args(args: &str) -> String {
 
     result
 }
+
+#[test]
+fn cat_is_ok() {
+    let command = "cat \'./testing/cock.txt\'";
+    let result = parse_command(command);
+    assert!(result.is_ok());
+}
+
+#[test]
+fn cat_correct() {
+    let command = "cat \'./testing/cock.txt\'";
+    let binding = parse_command(command).unwrap();
+    let result = binding.trim();
+    assert!(result.eq("cock"));
+}
+
+#[test]
+fn cat_incorrect() {
+    let command = "cat ./testing/shit.txt";
+    let result = parse_command(command).unwrap();
+    assert!(result.is_empty());
+}
+
+#[test]
+fn cat_four_spaces() {
+    let command = "cat \'./testing/cock    23.txt\'";
+    let result = parse_command(command).unwrap();
+    println!("Result: {}", result);
+    assert!(result.eq("cock"));
+}
