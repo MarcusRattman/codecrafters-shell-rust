@@ -57,6 +57,10 @@ fn parse_command(input: &str) -> Result<String, CommandParseError> {
         }
     });
 
+    if args_vec.is_empty() {
+        args_vec.push(args.to_string());
+    }
+
     match command {
         "exit" => {
             let code: i32 = args_vec[0].parse().unwrap_or(-1);
