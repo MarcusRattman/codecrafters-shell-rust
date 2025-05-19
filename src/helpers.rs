@@ -68,6 +68,13 @@ fn cat_incorrect() {
 fn cat_four_spaces() {
     let command = "cat \'./testing/cock    23.txt\'";
     let result = parse_command(command).unwrap();
-    println!("Result: {}", result);
     assert!(result.eq("cock"));
+}
+
+#[test]
+fn cat_multiple_files() {
+    let command = "cat \'./testing/test.txt\' \'./testing/cock.txt\'";
+    let result = parse_command(command).unwrap();
+    println!("Result {}", result);
+    assert!(result.eq("cockcock"));
 }

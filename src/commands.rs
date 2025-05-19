@@ -51,8 +51,10 @@ pub fn run_binary(command: &str, args: &str) -> Result<String, CommandParseError
     let binaries = get_binaries().unwrap();
     let error_msg: String;
 
+    let test = args.split_whitespace().collect::<Vec<&str>>();
+
     if binaries.iter().find(|bin| bin.name.eq(command)).is_some() {
-        let exec = Command::new(command).arg(args).output();
+        let exec = Command::new(command).args(test).output();
 
         if let Ok(output) = exec {
             let result = String::from_utf8(output.stdout).unwrap().trim().to_string();
