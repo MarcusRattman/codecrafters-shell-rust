@@ -36,10 +36,8 @@ fn parse_args(args: &str) -> Vec<String> {
         match c {
             '\\' => {
                 if in_single_quotes || in_double_quotes {
-                    // In quotes, treat backslash as a literal
                     current_arg.push(c);
                 } else if let Some(&next_char) = chars.peek() {
-                    // Outside quotes, escape special character
                     chars.next();
                     current_arg.push(next_char);
                 }
