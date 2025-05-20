@@ -36,7 +36,6 @@ fn parse_args(args: &str) -> Vec<String> {
                 if !in_double_quotes {
                     in_single_quotes = !in_single_quotes;
                 } else {
-                    // Inside double quotes, treat single quote as normal character
                     current_arg.push(c);
                 }
             }
@@ -44,16 +43,13 @@ fn parse_args(args: &str) -> Vec<String> {
                 if !in_single_quotes {
                     in_double_quotes = !in_double_quotes;
                 } else {
-                    // Inside single quotes, treat double quote as normal character
                     current_arg.push(c);
                 }
             }
             c if c.is_whitespace() => {
                 if in_single_quotes || in_double_quotes {
-                    // Inside quotes, whitespace is part of argument
                     current_arg.push(c);
                 } else {
-                    // Outside quotes, argument boundary
                     if !current_arg.is_empty() {
                         result.push(current_arg.clone());
                         current_arg.clear();
@@ -66,7 +62,6 @@ fn parse_args(args: &str) -> Vec<String> {
         }
     }
 
-    // Push the last argument if any
     if !current_arg.is_empty() {
         result.push(current_arg);
     }
