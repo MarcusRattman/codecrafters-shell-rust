@@ -35,7 +35,6 @@ fn parse_args(args: &str) -> Vec<String> {
             '\\' => {
                 if in_single_quotes || in_double_quotes {
                     current_arg.push(c);
-                    continue;
                 } else {
                     if let Some(&next_char) = chars.peek() {
                         chars.next();
