@@ -63,7 +63,7 @@ pub fn run_binary(command: &str, args: Vec<String>) -> Result<String, CommandPar
         let exec = Command::new(command).args(args).output();
 
         if let Ok(output) = exec {
-            let result = String::from_utf8(output.stdout).unwrap().to_string();
+            let result = String::from_utf8(output.stdout).unwrap().trim().to_string();
             return Ok(result);
         }
 
