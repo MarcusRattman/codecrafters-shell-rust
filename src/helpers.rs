@@ -30,20 +30,16 @@ fn parse_args(args: &str) -> Vec<String> {
 
     let mut chars = args.chars().peekable();
 
-    const SPECIAL_CHARACTERS: [char; 5] = ['\\', '$', '\"', ' ', '\''];
+    const SPECIAL_CHARACTERS: [char; 3] = ['\\', '$', '\"'];
 
     while let Some(c) = chars.next() {
         match c {
             '\\' => {
-                if in_single_quotes {
+                if in_single_quotes || in_double_quotes {
                     current_arg.push(c);
                 } else if let Some(&next_char) = chars.peek() {
-                    if SPECIAL_CHARACTERS.contains(&next_char) {
-                        chars.next();
-                        current_arg.push(next_char);
-                    } else {
-                        current_arg.push(c);
-                    }
+                    chars.next();
+                    current_arg.push(next_char);
                 }
             }
             '\'' => {
