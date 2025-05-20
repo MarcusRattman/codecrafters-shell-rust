@@ -35,7 +35,7 @@ fn parse_args(args: &str) -> Vec<String> {
     }
 
     args.chars().for_each(|c| {
-        if c.eq(&'\'') || c.eq(&'\"') {
+        if c.eq(&'\'') || c.eq(&'\"') && !in_quotes {
             in_quotes = !in_quotes;
         }
 
