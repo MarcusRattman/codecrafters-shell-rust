@@ -38,7 +38,7 @@ fn parse_args(args: &str) -> Vec<String> {
                 if let Some(&next_char) = chars.peek() {
                     if SPECIAL_CHARACTERS.contains(&next_char)
                         || !in_double_quotes
-                        || in_single_quotes
+                        || !in_single_quotes
                     {
                         chars.next();
                         current_arg.push(next_char);
