@@ -34,12 +34,14 @@ fn parse_args(args: &str) -> Vec<String> {
         match c {
             '\\' => {
                 if !in_single_quotes || !in_double_quotes {
-                    if let Some(&next_char) = chars.peek() {
-                        chars.next();
-                        current_arg.push(next_char);
-                    }
+                    current_arg.push(c);
+                    continue;
                 }
-                continue;
+
+                if let Some(&next_char) = chars.peek() {
+                    chars.next();
+                    current_arg.push(next_char);
+                }
             }
             '\'' => {
                 if !in_double_quotes {
