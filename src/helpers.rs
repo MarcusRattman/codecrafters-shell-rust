@@ -24,31 +24,49 @@ fn parse_args(args: &str) -> Vec<String> {
     let args = args.trim();
     let mut result = Vec::<String>::new();
 
-    let mut in_quotes = false;
+    let mut in_single_quotes = false;
+    let mut in_double_quotes = false;
     let mut current_arg = String::new();
 
-    if !args.contains("'") && !args.contains("\"") {
-        args.split_whitespace()
-            .for_each(|el| result.push(el.to_string()));
+    let mut chars = args.chars().peekable();
 
-        return result;
+    while let Some(c) = chars.next() {
+        match c {
+            '\'' => {
+                if !in_double_quotes {
+                    in_single_quotes = !in_single_quotes;
+                } else {
+                    // Inside double quotes, treat single quote as normal character
+                    current_arg.push(c);
+                }
+            }
+            '\"' => {
+                if !in_single_quotes {
+                    in_double_quotes = !in_double_quotes;
+                } else {
+                    // Inside single quotes, treat double quote as normal character
+                    current_arg.push(c);
+                }
+            }
+            c if c.is_whitespace() => {
+                if in_single_quotes || in_double_quotes {
+                    // Inside quotes, whitespace is part of argument
+                    current_arg.push(c);
+                } else {
+                    // Outside quotes, argument boundary
+                    if !current_arg.is_empty() {
+                        result.push(current_arg.clone());
+                        current_arg.clear();
+                    }
+                }
+            }
+            _ => {
+                current_arg.push(c);
+            }
+        }
     }
 
-    args.chars().for_each(|c| {
-        if c.eq(&'\'') || c.eq(&'\"') {
-            in_quotes = !in_quotes;
-        }
-
-        if c.ne(&'\'') && c.ne(&'\"') && in_quotes {
-            current_arg.push(c);
-        }
-
-        if !in_quotes && !current_arg.is_empty() && c.is_whitespace() {
-            result.push(current_arg.clone());
-            current_arg = String::new();
-        }
-    });
-
+    // Push the last argument if any
     if !current_arg.is_empty() {
         result.push(current_arg);
     }
