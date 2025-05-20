@@ -6,6 +6,8 @@ pub fn parse_command(input: &str) -> Result<String, CommandParseError> {
     let command = parts.next().unwrap_or("").trim();
     let args = parts.next().unwrap_or("").trim();
     let args = parse_args(args);
+    let binding = parse_args(command);
+    let command = binding[0].as_str();
 
     match command {
         "exit" => {
