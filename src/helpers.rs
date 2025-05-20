@@ -30,7 +30,7 @@ fn parse_args(args: &str) -> Vec<String> {
 
     let mut chars = args.chars().peekable();
 
-    const SPECIAL_CHARACTERS: [char; 4] = ['\\', '$', '\"', ' '];
+    const SPECIAL_CHARACTERS: [char; 5] = ['\\', '$', '\"', ' ', '\''];
 
     while let Some(c) = chars.next() {
         match c {
