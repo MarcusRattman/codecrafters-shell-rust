@@ -1,15 +1,16 @@
 use crate::models::{Binary, CommandParseError, BUILTINS};
 use std::{env, io, path::Path, process::Command};
 
-pub fn cd_command(args: &str) -> Result<String, CommandParseError> {
+pub fn cd_command(args: Vec<String>) -> Result<String, CommandParseError> {
     let home = env::var("HOME").unwrap();
+    let args = args.join("");
 
     let path = if args.trim() == "~" {
         Path::new(&home).to_path_buf()
     } else if args.starts_with("~") {
         Path::new(&home).join(&args[1..])
     } else {
-        Path::new(args).to_path_buf()
+        Path::new(&args).to_path_buf()
     };
 
     let cd = env::set_current_dir(&path);
@@ -32,32 +33,31 @@ pub fn pwd_command() -> Result<String, CommandParseError> {
     Err(CommandParseError("Incorrect directory".to_string()))
 }
 
-pub fn type_command(command: &str) -> Result<String, CommandParseError> {
+pub fn type_command(args: Vec<String>) -> Result<String, CommandParseError> {
     let binaries = get_binaries().unwrap();
+    let args = args[0].as_str();
 
-    if BUILTINS.contains(&command) {
-        return Ok(format!("{} is a shell builtin", command));
+    if BUILTINS.contains(&args) {
+        return Ok(format!("{} is a shell builtin", args));
     }
 
-    if let Some(binary) = binaries.iter().find(|binary| binary.name.eq(command)) {
-        return Ok(format!("{} is {}", command, binary.path));
+    if let Some(binary) = binaries.iter().find(|binary| binary.name.eq(args)) {
+        return Ok(format!("{} is {}", args, binary.path));
     }
 
-    let error_msg = format!("{}: not found", command);
+    let error_msg = format!("{}: not found", args);
     Err(CommandParseError(error_msg))
 }
 
-pub fn run_binary(command: &str, args: &str) -> Result<String, CommandParseError> {
+pub fn run_binary(command: &str, args: Vec<String>) -> Result<String, CommandParseError> {
     let binaries = get_binaries().unwrap();
     let error_msg: String;
 
-    let test = args.split_whitespace().collect::<Vec<&str>>();
-
     if binaries.iter().find(|bin| bin.name.eq(command)).is_some() {
-        let exec = Command::new(command).args(test).output();
+        let exec = Command::new(command).args(args).output();
 
         if let Ok(output) = exec {
-            let result = String::from_utf8(output.stdout).unwrap().trim().to_string();
+            let result = String::from_utf8(output.stdout).unwrap().to_string();
             return Ok(result);
         }
 

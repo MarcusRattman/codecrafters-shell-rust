@@ -5,14 +5,14 @@ pub fn parse_command(input: &str) -> Result<String, CommandParseError> {
     let mut parts = input.trim().splitn(2, ' ');
     let command = parts.next().unwrap_or("").trim();
     let args = parts.next().unwrap_or("").trim();
-    let args = &parse_args(args);
+    let args = parse_args(args);
 
     match command {
         "exit" => {
-            let code: i32 = args.parse().unwrap_or(-1);
+            let code: i32 = args[0].parse().unwrap_or(-1);
             exit(code);
         }
-        "echo" => Ok(format!("{}", args)),
+        "echo" => Ok(format!("{}", args.join(" "))),
         "type" => type_command(args),
         "pwd" => pwd_command(),
         "cd" => cd_command(args),
@@ -20,22 +20,32 @@ pub fn parse_command(input: &str) -> Result<String, CommandParseError> {
     }
 }
 
-fn parse_args(args: &str) -> String {
+fn parse_args(args: &str) -> Vec<String> {
     let args = args.trim();
-    let mut result = String::new();
-    let mut enclosed = false;
+    let mut result = Vec::<String>::new();
+
+    let mut in_quotes = false;
+    let mut current_arg = String::new();
 
     if !args.contains("'") {
-        return args.split_whitespace().collect::<Vec<&str>>().join(" ");
+        args.split_whitespace()
+            .for_each(|el| result.push(el.to_string()));
+
+        return result;
     }
 
     args.chars().for_each(|c| {
         if c.eq(&'\'') {
-            enclosed = !enclosed;
+            in_quotes = !in_quotes;
         }
 
         if c.ne(&'\'') {
-            result.push(c);
+            current_arg.push(c);
+        }
+
+        if !in_quotes && !current_arg.is_empty() {
+            result.push(current_arg.clone());
+            current_arg = String::new();
         }
     });
 
