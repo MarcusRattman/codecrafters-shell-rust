@@ -33,8 +33,7 @@ fn parse_args(args: &str) -> Vec<String> {
     while let Some(c) = chars.next() {
         match c {
             '\\' => {
-                if !in_single_quotes || !in_double_quotes {
-                    current_arg.push(c);
+                if in_single_quotes || in_double_quotes {
                     continue;
                 }
 
