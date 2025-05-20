@@ -17,7 +17,7 @@ fn main() {
         match result {
             Ok(val) => {
                 if val.len() > 0 {
-                    print!("{}", val);
+                    println!("{}", val);
                 }
             }
             Err(e) => println!("{}", e.0),
