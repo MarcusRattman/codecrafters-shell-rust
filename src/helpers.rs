@@ -38,6 +38,7 @@ fn parse_args(args: &str) -> Vec<String> {
                         chars.next();
                         current_arg.push(next_char);
                     }
+                    continue;
                 }
 
                 continue;
