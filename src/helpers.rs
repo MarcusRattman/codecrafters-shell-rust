@@ -12,7 +12,7 @@ pub fn parse_command(input: &str) -> Result<String, CommandParseError> {
             let code: i32 = args[0].parse().unwrap_or(-1);
             exit(code);
         }
-        "echo" => Ok(format!("{}", args.join(" "))),
+        "echo" => Ok(command_echo(args)),
         "type" => type_command(args),
         "pwd" => pwd_command(),
         "cd" => cd_command(args),
@@ -27,7 +27,7 @@ fn parse_args(args: &str) -> Vec<String> {
     let mut in_quotes = false;
     let mut current_arg = String::new();
 
-    if !args.contains("'") {
+    if !args.contains("'") && !args.contains("\"") {
         args.split_whitespace()
             .for_each(|el| result.push(el.to_string()));
 
@@ -39,7 +39,7 @@ fn parse_args(args: &str) -> Vec<String> {
             in_quotes = !in_quotes;
         }
 
-        if (c.ne(&'\'') || c.ne(&'\"')) && in_quotes {
+        if (c.ne(&'\'') && c.ne(&'\"')) && in_quotes {
             current_arg.push(c);
         }
 
