@@ -35,7 +35,13 @@ pub fn pwd_command() -> Result<String, CommandParseError> {
 
 pub fn type_command(args: Vec<String>) -> Result<String, CommandParseError> {
     let binaries = get_binaries().unwrap();
-    let args = args[0].as_str();
+    let args = args.first();
+
+    if args.is_none() {
+        return Err(CommandParseError("No arguments supplied".to_string()));
+    }
+
+    let args = args.unwrap().as_str();
 
     if BUILTINS.contains(&args) {
         return Ok(format!("{} is a shell builtin", args));

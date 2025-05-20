@@ -39,11 +39,11 @@ fn parse_args(args: &str) -> Vec<String> {
             in_quotes = !in_quotes;
         }
 
-        if c.ne(&'\'') {
+        if c.ne(&'\'') && in_quotes {
             current_arg.push(c);
         }
 
-        if !in_quotes && !current_arg.is_empty() {
+        if !in_quotes && !current_arg.is_empty() && c.is_whitespace() {
             result.push(current_arg.clone());
             current_arg = String::new();
         }
