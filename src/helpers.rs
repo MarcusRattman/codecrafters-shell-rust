@@ -49,6 +49,10 @@ fn parse_args(args: &str) -> Vec<String> {
         }
     });
 
+    if !current_arg.is_empty() {
+        result.push(current_arg);
+    }
+
     result
 }
 
