@@ -41,6 +41,8 @@ fn parse_args(args: &str) -> Vec<String> {
                     if SPECIAL_CHARACTERS.contains(&next_char) {
                         chars.next();
                         current_arg.push(next_char);
+                    } else {
+                        current_arg.push(c);
                     }
                 }
             }
