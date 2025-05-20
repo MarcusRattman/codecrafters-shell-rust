@@ -2,7 +2,7 @@ use crate::models::{Binary, CommandParseError, BUILTINS};
 use std::{env, io, path::Path, process::Command};
 
 pub fn command_echo(args: Vec<String>) -> String {
-    format!("{}", args.join(""))
+    format!("{}", args.join(" "))
 }
 
 pub fn cd_command(args: Vec<String>) -> Result<String, CommandParseError> {
