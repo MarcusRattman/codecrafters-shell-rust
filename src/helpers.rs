@@ -2,12 +2,9 @@ use crate::{commands::*, models::CommandParseError};
 use std::process::exit;
 
 pub fn parse_command(input: &str) -> Result<String, CommandParseError> {
-    let mut parts = input.trim().splitn(2, ' ');
-    let command = parts.next().unwrap_or("").trim();
-    let args = parts.next().unwrap_or("").trim();
-    let args = parse_args(args);
-    let binding = parse_args(command);
-    let command = binding[0].as_str();
+    let mut test = parse_input(input);
+    let args = test.split_off(1);
+    let command = test[0].as_str();
 
     match command {
         "exit" => {
@@ -22,7 +19,7 @@ pub fn parse_command(input: &str) -> Result<String, CommandParseError> {
     }
 }
 
-fn parse_args(args: &str) -> Vec<String> {
+fn parse_input(args: &str) -> Vec<String> {
     let args = args.trim();
     let mut result = Vec::<String>::new();
 
