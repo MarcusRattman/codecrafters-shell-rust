@@ -2,6 +2,7 @@ use crate::models::{Binary, CommandParseError, IOError, BUILTINS};
 use std::{
     env,
     io::{self, Error},
+    os::unix::process::CommandExt,
     path::Path,
     process::Command,
 };
@@ -71,8 +72,13 @@ pub fn run_binary(command: String, args: Vec<String>) -> Result<String, IOError>
         let exec = Command::new(&command).args(args).output();
 
         if let Ok(output) = exec {
-            let result = String::from_utf8(output.stdout).unwrap().trim().to_string();
-            return Ok(result);
+            if output.stderr.is_empty() {
+                let result = String::from_utf8(output.stdout).unwrap().trim().to_string();
+                return Ok(result);
+            } else {
+                let result = String::from_utf8(output.stderr).unwrap().trim().to_string();
+                return Ok(result);
+            }
         }
 
         let err = IOError::StdError(exec.unwrap_err());
