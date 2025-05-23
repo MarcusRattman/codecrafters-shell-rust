@@ -28,7 +28,6 @@ fn main() {
                     IOError::NoSuchDir(e) => println!("{}", e),
                     IOError::StdError(e) => println!("{}", e),
                 },
-                //CommandParseError::BinExecError(e) => println!("{}", e),
                 CommandParseError::WrongArgsNum => (),
             },
         }

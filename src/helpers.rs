@@ -30,19 +30,21 @@ pub fn parse_command(input: &str) -> Result<String, CommandParseError> {
     let result = exec_command(left);
 
     if let Some(fname) = filename {
-        if let Err(e) = result {
-            return Err(e);
-        }
+        let result = match result {
+            Ok(s) => s,
+            Err(_) => String::new(),
+        };
 
-        let result = result.unwrap();
         let written = write_to_file(fname, result);
-        match written {
+        let res = match written {
             Ok(_) => Ok(String::new()),
             Err(e) => Err(CommandParseError::ComposableError(IOError::StdError(e))),
-        }
-    } else {
-        result
+        };
+
+        return res;
     }
+
+    return result;
 }
 
 fn write_to_file(filename: String, content: String) -> Result<(), std::io::Error> {

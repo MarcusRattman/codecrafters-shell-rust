@@ -1,8 +1,7 @@
 use crate::models::{Binary, CommandParseError, IOError, BUILTINS};
 use std::{
     env,
-    io::{self, Error},
-    os::unix::process::CommandExt,
+    io::{self},
     path::Path,
     process::Command,
 };
