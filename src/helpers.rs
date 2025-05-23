@@ -42,35 +42,34 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
             return Err(e);
         }
         let result = result.unwrap();
-        let to_write = match stream_to_write {
-            IOStreamType::StdOut => &result.stdout.clone().unwrap(),
-            IOStreamType::StdErr => {
-                if result.stderr.is_some() {
-                    &result.stderr.clone().unwrap()
-                } else {
-                    &String::new()
-                }
-            }
-        };
 
-        let written = write_to_file(fname, to_write.clone());
+        // let stdout = result.stdout;
+        // let stderr = result.stderr;
+
+        // let to_write = match stream_to_write {
+        //     IOStreamType::StdOut => stdout.clone().unwrap(),
+        //     IOStreamType::StdErr => {
+        //         if stderr.is_some() {
+        //             stderr.clone().unwrap()
+        //         } else {
+        //             String::new()
+        //         }
+        //     }
+        // };
+
+        let written = write_to_file(fname, &result, &stream_to_write);
         // Shitshow
         if let Err(e) = written {
             return Err(CommandParseError::ComposableError(IOError::StdError(e)));
         }
 
-        //cocj
-
-        let stdout = result.stdout;
-        let stderr = result.stderr;
-
         let result = match stream_to_write {
             IOStreamType::StdOut => IOStream {
                 stdout: None,
-                stderr: stderr,
+                stderr: result.stderr,
             },
             IOStreamType::StdErr => IOStream {
-                stdout: stdout,
+                stdout: result.stdout,
                 stderr: None,
             },
         };
@@ -80,10 +79,26 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
     result
 }
 
-fn write_to_file(filename: String, content: String) -> Result<(), Error> {
-    let mut created = fs::File::create_new(&filename)?;
-    let text = content.as_bytes();
-    created.write_all(text)?;
+fn write_to_file(filename: String, stream: &IOStream, stype: &IOStreamType) -> Result<(), Error> {
+    let mut file = fs::File::create_new(&filename)?;
+
+    let stdout = &stream.stdout;
+    let stderr = &stream.stderr;
+
+    let text = match stype {
+        IOStreamType::StdOut => stdout.clone().unwrap(),
+        IOStreamType::StdErr => {
+            if stderr.is_some() {
+                stderr.clone().unwrap()
+            } else {
+                String::new()
+            }
+        }
+    };
+
+    let text = text.as_bytes();
+
+    file.write_all(text)?;
 
     Ok(())
 }
