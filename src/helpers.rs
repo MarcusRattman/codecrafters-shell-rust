@@ -1,5 +1,5 @@
 use crate::commands::*;
-use crate::models::{CommandParseError, IOError, IOStream, SPECIAL_CHARACTERS};
+use crate::models::{CommandParseError, IOError, IOStream, IOStreamType, SPECIAL_CHARACTERS};
 use std::fs;
 use std::io::{Error, Write};
 use std::process::exit;
@@ -9,31 +9,49 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
     if parsed.is_empty() {
         return Ok(IOStream::new(String::new(), String::new()));
     }
+
     let mut filename: Option<String> = None;
     let mut parsed_iter = parsed.into_iter();
     let mut left: Vec<String> = vec![];
+    let mut stream_to_write = IOStreamType::StdOut;
+
     while let Some(arg) = parsed_iter.next() {
         match arg.as_str() {
             ">" | "1>" => {
                 if let Some(s) = parsed_iter.next() {
                     filename = Some(s);
+                    stream_to_write = IOStreamType::StdOut;
+                    break;
+                }
+            }
+            "2>" => {
+                if let Some(s) = parsed_iter.next() {
+                    filename = Some(s);
+                    stream_to_write = IOStreamType::StdErr;
                     break;
                 }
             }
             _ => left.push(arg.to_string()),
         };
     }
+
     let result = exec_command(left);
     if let Some(fname) = filename {
         if let Err(e) = result {
             return Err(e);
         }
         let result = result.unwrap();
-        let written = write_to_file(fname, (&result.stdout).clone().unwrap());
+        let to_write = match stream_to_write {
+            IOStreamType::StdOut => &result.stdout,
+            IOStreamType::StdErr => &result.stderr,
+        };
+
+        let written = write_to_file(fname, to_write.clone().unwrap());
         // Shitshow
         if let Err(e) = written {
             return Err(CommandParseError::ComposableError(IOError::StdError(e)));
         }
+
         return Ok(IOStream {
             stdout: None,
             stderr: result.stderr,
@@ -50,11 +68,11 @@ fn write_to_file(filename: String, content: String) -> Result<(), Error> {
     Ok(())
 }
 
-fn exec_command(mut to_match: Vec<String>) -> Result<IOStream, CommandParseError> {
-    let command = to_match.remove(0);
-    let args = to_match;
+fn exec_command(mut command: Vec<String>) -> Result<IOStream, CommandParseError> {
+    let cmd = command.remove(0);
+    let args = command;
 
-    match command.as_str() {
+    match cmd.as_str() {
         "exit" => {
             let code: i32 = args[0].parse().unwrap_or(-1);
             exit(code);
@@ -79,7 +97,7 @@ fn exec_command(mut to_match: Vec<String>) -> Result<IOStream, CommandParseError
             }
         }
         _ => {
-            let exec = run_binary(command, args);
+            let exec = run_binary(cmd, args);
             match exec {
                 Ok(s) => Ok(s),
                 Err(e) => Err(CommandParseError::ComposableError(e)),
