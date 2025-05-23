@@ -15,16 +15,15 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
     let mut parsed_iter = parsed.into_iter();
     let mut left: Vec<String> = vec![];
 
-    // Parsing args 1 by 1 trying to find the redirect operator
     while let Some(arg) = parsed_iter.next() {
         match arg.as_str() {
-            ">" => {
+            ">" | "1>" => {
                 if let Some(s) = parsed_iter.next() {
                     filename = Some(s);
                     break;
                 }
             }
-            _ => left.push(arg.to_string()), // Forming left side of the expression
+            _ => left.push(arg.to_string()),
         };
     }
 
@@ -67,7 +66,7 @@ fn exec_command(mut to_match: Vec<String>) -> Result<IOStream, CommandParseError
             let code: i32 = args[0].parse().unwrap_or(-1);
             exit(code);
         }
-        "echo" => Ok(echo_command(args)), // echo cannot fail so whatever
+        "echo" => Ok(echo_command(args)),
         "type" => type_command(args),
         "pwd" => {
             let pwd = pwd_command();
@@ -79,7 +78,6 @@ fn exec_command(mut to_match: Vec<String>) -> Result<IOStream, CommandParseError
         "cd" => {
             let cd = cd_command(args);
             match cd {
-                // Since cd has no output (yet), IOStream's gonna be None
                 Ok(_) => Ok(IOStream {
                     stdout: None,
                     stderr: None,
