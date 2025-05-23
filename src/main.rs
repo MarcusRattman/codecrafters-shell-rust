@@ -25,6 +25,7 @@ fn main() {
             Err(e) => match e {
                 CommandParseError::CommandNotFound(e) => println!("{}", e),
                 CommandParseError::ComposableError(e) => match e {
+                    IOError::StreamError(stream) => println!("{}", stream.stdout),
                     IOError::NoSuchDir(e) => println!("{}", e),
                     IOError::StdError(e) => println!("{}", e),
                 },

@@ -1,5 +1,6 @@
 use std::io::Error;
 
+#[derive(Debug)]
 pub struct IOStream {
     pub stdout: String,
     pub stderr: String,
@@ -33,6 +34,7 @@ pub enum CommandParseError {
 pub enum IOError {
     NoSuchDir(String),
     StdError(Error),
+    StreamError(IOStream),
 }
 
 pub const BUILTINS: &[&str] = &["exit", "echo", "type", "pwd", "cd"];

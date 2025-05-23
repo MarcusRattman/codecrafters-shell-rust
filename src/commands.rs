@@ -76,7 +76,11 @@ pub fn run_binary(command: String, args: Vec<String>) -> Result<IOStream, IOErro
 
             let result = IOStream::new(stdout, stderr);
 
-            return Ok(result);
+            if result.stderr.is_empty() {
+                return Ok(result);
+            }
+
+            return Err(IOError::StreamError(result));
         }
 
         let err = IOError::StdError(exec.unwrap_err());
