@@ -14,10 +14,11 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
     let mut filename: Option<String> = None;
     let mut parsed_iter = parsed.into_iter();
     let mut left: Vec<String> = vec![];
+    let mut op = String::new();
 
     while let Some(arg) = parsed_iter.next() {
         match arg.as_str() {
-            ">" | "1>" => {
+            ">" | "1>" | "2>" => {
                 if let Some(s) = parsed_iter.next() {
                     filename = Some(s);
                     break;
@@ -35,7 +36,7 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
         }
 
         let result = result.unwrap();
-        let written = write_to_file(fname, (&result.stdout).clone().unwrap());
+        let written = write_to_file(fname, &result, &op);
 
         // Shitshow
         if let Err(e) = written {
@@ -50,9 +51,14 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
     result
 }
 
-fn write_to_file(filename: String, content: String) -> Result<(), Error> {
+fn write_to_file(filename: String, content: &IOStream, op: &String) -> Result<(), Error> {
     let mut created = fs::File::create_new(&filename)?;
-    let text = content.as_bytes();
+    let text = match op.as_str() {
+        "2>" => &content.stderr,
+        _ => &content.stdout,
+    };
+    let text = text.clone().unwrap();
+    let text = text.as_bytes();
     created.write_all(text)?;
 
     Ok(())
