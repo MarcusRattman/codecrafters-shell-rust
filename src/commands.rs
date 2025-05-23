@@ -1,10 +1,5 @@
 use crate::models::{Binary, CommandParseError, IOError, IOStream, BUILTINS};
-use std::{
-    env,
-    io::{self},
-    path::Path,
-    process::Command,
-};
+use std::{env, io::Error, path::Path, process::Command};
 
 pub fn echo_command(args: Vec<String>) -> IOStream {
     let result = format!("{}", args.join(" "));
@@ -92,11 +87,7 @@ pub fn run_binary(command: String, args: Vec<String>) -> Result<IOStream, IOErro
 
             let result = IOStream::new(stdout, stderr);
 
-            if result.stderr.is_none() {
-                return Ok(result);
-            }
-
-            return Err(IOError::StreamError(result));
+            return Ok(result);
         }
 
         let err = IOError::StdError(exec.unwrap_err());
@@ -107,7 +98,7 @@ pub fn run_binary(command: String, args: Vec<String>) -> Result<IOStream, IOErro
     }
 }
 
-fn get_binaries() -> Result<Vec<Binary>, io::Error> {
+fn get_binaries() -> Result<Vec<Binary>, Error> {
     let path_var = env::var("PATH").unwrap_or_default();
 
     let binaries = path_var

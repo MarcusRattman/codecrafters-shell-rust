@@ -18,15 +18,16 @@ fn main() {
 
         match result {
             Ok(stream) => {
-                let stdout = stream.stdout.unwrap();
-                //if stdout.len() > 0 {
-                //    println!("{}", stdout);
-                //}
+                if let Some(stdout) = stream.stdout {
+                    if stdout.len() > 0 {
+                        println!("{}", stdout);
+                    }
+                }
             }
             Err(e) => match e {
                 CommandParseError::CommandNotFound(e) => println!("{}", e),
                 CommandParseError::ComposableError(e) => match e {
-                    IOError::StreamError(stream) => println!("{}", stream.stdout.unwrap()),
+                    IOError::StreamError(stream) => println!("{}", stream.stderr.unwrap()),
                     IOError::NoSuchDir(e) => println!("{}", e),
                     IOError::StdError(e) => println!("{}", e),
                 },

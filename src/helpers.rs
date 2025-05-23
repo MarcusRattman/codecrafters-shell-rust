@@ -35,12 +35,12 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
         }
 
         let result = result.unwrap();
-        let written = write_to_file(fname, result.stdout.unwrap());
+        let written = write_to_file(fname, (&result.stdout).clone().unwrap());
 
         match written {
-            Ok(s) => Ok(IOStream {
-                stdout: Some(s),
-                stderr: None,
+            Ok(_) => Ok(IOStream {
+                stdout: None,
+                stderr: result.stderr,
             }),
             Err(e) => Err(CommandParseError::ComposableError(IOError::StdError(e))),
         }
@@ -49,12 +49,12 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
     }
 }
 
-fn write_to_file(filename: String, content: String) -> Result<String, Error> {
+fn write_to_file(filename: String, content: String) -> Result<(), Error> {
     let mut created = fs::File::create_new(&filename)?;
     let text = content.as_bytes();
     created.write_all(text)?;
 
-    Ok(content)
+    Ok(())
 }
 
 fn exec_command(mut to_match: Vec<String>) -> Result<IOStream, CommandParseError> {
