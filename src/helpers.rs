@@ -28,16 +28,16 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
         };
     }
 
-    let result = exec_command(left)?;
+    let result = exec_command(left);
 
     // If operator is found and filename is set, we're gonna make a new file and write
     // left side of the expression into it
     if let Some(fname) = filename {
-        // if let Err(e) = result {
-        //     return Err(e);
-        // }
+        if let Err(e) = result {
+            return Err(e);
+        }
 
-        // let result = result.unwrap();
+        let result = result.unwrap();
         let written = write_to_file(fname, (&result.stdout).clone().unwrap());
 
         match written {
@@ -45,10 +45,14 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
                 stdout: None,
                 stderr: result.stderr,
             }),
-            Err(e) => Err(CommandParseError::ComposableError(IOError::StdError(e))),
+            Err(e) => {
+                // utter shitshow
+                let err = CommandParseError::ComposableError(IOError::StdError(e));
+                Err(err)
+            }
         }
     } else {
-        Ok(result)
+        result
     }
 }
 
