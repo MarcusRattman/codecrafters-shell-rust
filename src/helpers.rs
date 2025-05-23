@@ -36,6 +36,7 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
     }
 
     let result = exec_command(left);
+
     if let Some(fname) = filename {
         if let Err(e) = result {
             return Err(e);
@@ -52,10 +53,21 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
             return Err(CommandParseError::ComposableError(IOError::StdError(e)));
         }
 
-        return Ok(IOStream {
-            stdout: None,
-            stderr: result.stderr,
-        });
+        let stdout = result.stdout;
+        let stderr = result.stderr;
+
+        let result = match stream_to_write {
+            IOStreamType::StdOut => IOStream {
+                stdout: None,
+                stderr: stderr,
+            },
+            IOStreamType::StdErr => IOStream {
+                stdout: stdout,
+                stderr: None,
+            },
+        };
+
+        return Ok(result);
     }
     result
 }
