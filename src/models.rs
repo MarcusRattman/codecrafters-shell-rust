@@ -4,12 +4,14 @@ pub struct Binary {
     pub path: String,
     pub name: String,
 }
+
 #[derive(Debug)]
 pub enum CommandParseError {
     ComposableError(IOError),
     CommandNotFound(String),
     WrongArgsNum,
 }
+
 #[derive(Debug)]
 pub enum IOError {
     NoSuchDir(String),

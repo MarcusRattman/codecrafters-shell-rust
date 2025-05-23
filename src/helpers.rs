@@ -1,7 +1,7 @@
 use crate::commands::*;
 use crate::models::{CommandParseError, IOError, SPECIAL_CHARACTERS};
 use std::fs;
-use std::io::Write;
+use std::io::{Error, Write};
 use std::process::exit;
 
 pub fn parse_command(input: &str) -> Result<String, CommandParseError> {
@@ -45,7 +45,7 @@ pub fn parse_command(input: &str) -> Result<String, CommandParseError> {
     }
 }
 
-fn write_to_file(filename: String, content: String) -> Result<(), std::io::Error> {
+fn write_to_file(filename: String, content: String) -> Result<(), Error> {
     let mut created = fs::File::create_new(&filename)?;
     let content = content.as_bytes();
     created.write_all(content)?;
