@@ -53,6 +53,8 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
             return Err(CommandParseError::ComposableError(IOError::StdError(e)));
         }
 
+        //cocj
+
         let stdout = result.stdout;
         let stderr = result.stderr;
 
