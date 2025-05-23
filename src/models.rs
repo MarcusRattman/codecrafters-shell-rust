@@ -53,9 +53,9 @@ pub enum CommandParseError {
 impl std::fmt::Display for CommandParseError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            CommandParseError::ComposableError(ioe) => write!(f, "{}", ioe),
-            CommandParseError::CommandNotFound(s) => write!(f, "{}", s),
-            _ => write!(f, ""),
+            //CommandParseError::ComposableError(ioe) => write!(f, "{}", ioe),
+            //CommandParseError::CommandNotFound(s) => write!(f, "{}", s),
+            any => write!(f, "{}", any),
         }
     }
 }
@@ -69,8 +69,9 @@ pub enum IOError {
 impl std::fmt::Display for IOError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            IOError::NoSuchDir(s) => write!(f, "{}", s),
-            IOError::StdError(e) => write!(f, "{}", e),
+            //IOError::NoSuchDir(s) => write!(f, "{}", s),
+            //IOError::StdError(e) => write!(f, "{}", e),
+            any => write!(f, "{}", any),
         }
     }
 }
