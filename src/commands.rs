@@ -77,7 +77,7 @@ pub fn run_binary(command: String, args: Vec<String>) -> Result<String, IOError>
                 return Ok(result);
             } else {
                 let result = String::from_utf8(output.stderr).unwrap().trim().to_string();
-                return Ok(result);
+                return Err(IOError::NoSuchDir(result));
             }
         }
 

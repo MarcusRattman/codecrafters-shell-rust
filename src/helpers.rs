@@ -29,6 +29,10 @@ pub fn parse_command(input: &str) -> Result<String, CommandParseError> {
     let result = exec_command(left);
 
     if let Some(fname) = filename {
+        if let Err(e) = result {
+            return Err(e);
+        }
+
         let result = result.unwrap();
         let written = write_to_file(fname, result);
         match written {
