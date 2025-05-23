@@ -22,13 +22,7 @@ fn main() {
                     println!("{}", s);
                 }
             }
-            Err(e) => match e {
-                CommandParseError::ComposableError(e) => match e {
-                    //IOError::StreamError(stream) => println!("{}", stream.stderr.unwrap()),
-                    e => println!("{}", e),
-                },
-                e => println!("{}", e),
-            },
+            Err(e) => println!("{}", e),
         }
     }
 }
