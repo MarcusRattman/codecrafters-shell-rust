@@ -1,10 +1,16 @@
-use crate::{commands::*, models::CommandParseError};
+use crate::commands::*;
+use crate::models::{CommandParseError, SPECIAL_CHARACTERS};
 use std::process::exit;
 
 pub fn parse_command(input: &str) -> Result<String, CommandParseError> {
-    let mut test = parse_input(input);
-    let args = test.split_off(1);
-    let command = test[0].as_str();
+    let mut parsed = parse_input(input);
+
+    if parsed.is_empty() {
+        return Ok(String::new());
+    }
+
+    let args = parsed.split_off(1);
+    let command = parsed.first().unwrap().as_str();
 
     match command {
         "exit" => {
@@ -28,8 +34,6 @@ fn parse_input(args: &str) -> Vec<String> {
     let mut current_arg = String::new();
 
     let mut chars = args.chars().peekable();
-
-    const SPECIAL_CHARACTERS: [char; 3] = ['\\', '$', '\"'];
 
     while let Some(c) = chars.next() {
         match c {
@@ -62,11 +66,9 @@ fn parse_input(args: &str) -> Vec<String> {
             c if c.is_whitespace() => {
                 if in_single_quotes || in_double_quotes {
                     current_arg.push(c);
-                } else {
-                    if !current_arg.is_empty() {
-                        result.push(current_arg.clone());
-                        current_arg.clear();
-                    }
+                } else if !current_arg.is_empty() {
+                    result.push(current_arg.clone());
+                    current_arg.clear();
                 }
             }
             _ => {
