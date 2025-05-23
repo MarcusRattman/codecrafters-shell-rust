@@ -1,14 +1,14 @@
 use crate::commands::*;
-use crate::models::{CommandParseError, IOError, SPECIAL_CHARACTERS};
+use crate::models::{CommandParseError, IOError, IOStream, SPECIAL_CHARACTERS};
 use std::fs;
 use std::io::{Error, Write};
 use std::process::exit;
 
-pub fn parse_command(input: &str) -> Result<String, CommandParseError> {
+pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
     let parsed = parse_input(input);
 
     if parsed.is_empty() {
-        return Ok(String::new());
+        return Ok(IOStream::new(String::new(), String::new()));
     }
 
     let mut filename: Option<String> = None;
@@ -35,9 +35,13 @@ pub fn parse_command(input: &str) -> Result<String, CommandParseError> {
         }
 
         let result = result.unwrap();
-        let written = write_to_file(fname, result);
+        let written = write_to_file(fname, result.stdout.unwrap());
+
         match written {
-            Ok(_) => Ok(String::new()),
+            Ok(s) => Ok(IOStream {
+                stdout: Some(s),
+                stderr: None,
+            }),
             Err(e) => Err(CommandParseError::ComposableError(IOError::StdError(e))),
         }
     } else {
@@ -45,15 +49,15 @@ pub fn parse_command(input: &str) -> Result<String, CommandParseError> {
     }
 }
 
-fn write_to_file(filename: String, content: String) -> Result<(), Error> {
+fn write_to_file(filename: String, content: String) -> Result<String, Error> {
     let mut created = fs::File::create_new(&filename)?;
-    let content = content.as_bytes();
-    created.write_all(content)?;
+    let text = content.as_bytes();
+    created.write_all(text)?;
 
-    Ok(())
+    Ok(content)
 }
 
-fn exec_command(mut to_match: Vec<String>) -> Result<String, CommandParseError> {
+fn exec_command(mut to_match: Vec<String>) -> Result<IOStream, CommandParseError> {
     let command = to_match.remove(0);
     let args = to_match;
 
@@ -74,14 +78,17 @@ fn exec_command(mut to_match: Vec<String>) -> Result<String, CommandParseError> 
         "cd" => {
             let cd = cd_command(args);
             match cd {
-                Ok(s) => Ok(s),
+                Ok(_) => Ok(IOStream {
+                    stdout: None,
+                    stderr: None,
+                }),
                 Err(e) => Err(CommandParseError::ComposableError(e)),
             }
         }
         _ => {
             let exec = run_binary(command, args);
             match exec {
-                Ok(s) => Ok(s.stdout),
+                Ok(s) => Ok(s),
                 Err(e) => Err(CommandParseError::ComposableError(e)),
             }
         }

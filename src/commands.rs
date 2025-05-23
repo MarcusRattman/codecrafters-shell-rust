@@ -6,11 +6,12 @@ use std::{
     process::Command,
 };
 
-pub fn echo_command(args: Vec<String>) -> String {
-    format!("{}", args.join(" "))
+pub fn echo_command(args: Vec<String>) -> IOStream {
+    let result = format!("{}", args.join(" "));
+    IOStream::new(result, String::new())
 }
 
-pub fn cd_command(args: Vec<String>) -> Result<String, IOError> {
+pub fn cd_command(args: Vec<String>) -> Result<(), IOError> {
     let home = env::var("HOME").unwrap();
     let args = args.join("");
 
@@ -29,20 +30,25 @@ pub fn cd_command(args: Vec<String>) -> Result<String, IOError> {
         return Err(IOError::NoSuchDir(error_msg));
     }
 
-    Ok(String::new())
+    Ok(())
 }
 
-pub fn pwd_command() -> Result<String, IOError> {
+pub fn pwd_command() -> Result<IOStream, IOError> {
     let dir = env::current_dir();
 
     if let Ok(dir) = dir {
-        return Ok(dir.to_str().unwrap().to_string());
+        let result = IOStream {
+            stdout: Some(dir.to_str().unwrap().to_string()),
+            stderr: None,
+        };
+
+        return Ok(result);
     }
 
     Err(IOError::NoSuchDir("Incorrect directory".to_string()))
 }
 
-pub fn type_command(args: Vec<String>) -> Result<String, CommandParseError> {
+pub fn type_command(args: Vec<String>) -> Result<IOStream, CommandParseError> {
     let binaries = get_binaries().unwrap();
     let args = args.first();
 
@@ -53,11 +59,21 @@ pub fn type_command(args: Vec<String>) -> Result<String, CommandParseError> {
     let args = args.unwrap().as_str();
 
     if BUILTINS.contains(&args) {
-        return Ok(format!("{} is a shell builtin", args));
+        let stdout = format!("{} is a shell builtin", args);
+        let result = IOStream {
+            stdout: Some(stdout),
+            stderr: None,
+        };
+        return Ok(result);
     }
 
     if let Some(binary) = binaries.iter().find(|binary| binary.name.eq(args)) {
-        return Ok(format!("{} is {}", args, binary.path));
+        let stdout = format!("{} is {}", args, binary.path);
+        let result = IOStream {
+            stdout: Some(stdout),
+            stderr: None,
+        };
+        return Ok(result);
     }
 
     let error_msg = format!("{}: not found", args);
@@ -76,7 +92,7 @@ pub fn run_binary(command: String, args: Vec<String>) -> Result<IOStream, IOErro
 
             let result = IOStream::new(stdout, stderr);
 
-            if result.stderr.is_empty() {
+            if result.stderr.is_none() {
                 return Ok(result);
             }
 

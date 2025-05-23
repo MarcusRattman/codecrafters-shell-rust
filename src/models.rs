@@ -2,13 +2,16 @@ use std::io::Error;
 
 #[derive(Debug)]
 pub struct IOStream {
-    pub stdout: String,
-    pub stderr: String,
+    pub stdout: Option<String>,
+    pub stderr: Option<String>,
 }
 
 impl IOStream {
     pub fn new(stdout: String, stderr: String) -> Self {
-        Self { stdout, stderr }
+        Self {
+            stdout: Some(stdout),
+            stderr: Some(stderr),
+        }
     }
 }
 

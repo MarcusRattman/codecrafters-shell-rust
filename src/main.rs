@@ -17,15 +17,16 @@ fn main() {
         let result = parse_command(&input);
 
         match result {
-            Ok(val) => {
-                if val.len() > 0 {
-                    println!("{}", val);
+            Ok(stream) => {
+                let stdout = stream.stdout.unwrap();
+                if stdout.len() > 0 {
+                    println!("{}", stdout);
                 }
             }
             Err(e) => match e {
                 CommandParseError::CommandNotFound(e) => println!("{}", e),
                 CommandParseError::ComposableError(e) => match e {
-                    IOError::StreamError(stream) => println!("{}", stream.stderr),
+                    IOError::StreamError(stream) => println!("{}", stream.stdout.unwrap()),
                     IOError::NoSuchDir(e) => println!("{}", e),
                     IOError::StdError(e) => println!("{}", e),
                 },
