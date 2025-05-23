@@ -11,6 +11,7 @@ fn main() {
         let mut input = String::new();
         print!("$ ");
         io::stdout().flush().unwrap();
+        io::stderr().flush().unwrap();
         io::stdin().read_line(&mut input).unwrap();
 
         let result = parse_command(&input);
