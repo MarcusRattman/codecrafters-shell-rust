@@ -6,61 +6,37 @@ use std::process::exit;
 
 pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
     let parsed = parse_input(input);
-
     if parsed.is_empty() {
         return Ok(IOStream::new(String::new(), String::new()));
     }
-
     let mut filename: Option<String> = None;
     let mut parsed_iter = parsed.into_iter();
     let mut left: Vec<String> = vec![];
-    let mut op = ">".to_string();
-
     while let Some(arg) = parsed_iter.next() {
         match arg.as_str() {
-            ">" | "1>" | "2>" => {
+            ">" | "1>" => {
                 if let Some(s) = parsed_iter.next() {
                     filename = Some(s);
-                    op = arg;
                     break;
                 }
             }
             _ => left.push(arg.to_string()),
         };
     }
-
     let result = exec_command(left);
-
     if let Some(fname) = filename {
         if let Err(e) = result {
             return Err(e);
         }
-
         let result = result.unwrap();
-
-        let mut skip_err = false;
-        let mut skip_out = false;
-        let written = match op.as_str() {
-            "2>" => {
-                skip_err = true;
-                write_to_file(fname, (&result.stderr).clone().unwrap())
-            }
-            _ => {
-                skip_out = true;
-                write_to_file(fname, (&result.stdout).clone().unwrap())
-            }
-        };
-
-        //let written = write_to_file(fname, (&result.stdout).clone().unwrap());
-
+        let written = write_to_file(fname, (&result.stdout).clone().unwrap());
         // Shitshow
         if let Err(e) = written {
             return Err(CommandParseError::ComposableError(IOError::StdError(e)));
         }
-
         return Ok(IOStream {
-            stdout: if skip_out { None } else { result.stdout },
-            stderr: if skip_err { None } else { result.stderr },
+            stdout: None,
+            stderr: result.stderr,
         });
     }
     result
