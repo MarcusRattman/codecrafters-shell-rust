@@ -9,8 +9,17 @@ pub struct IOStream {
 impl IOStream {
     pub fn new(stdout: String, stderr: String) -> Self {
         Self {
-            stdout: Some(stdout),
-            stderr: Some(stderr),
+            stdout: if stdout.is_empty() {
+                None
+            } else {
+                Some(stdout)
+            },
+
+            stderr: if stderr.is_empty() {
+                None
+            } else {
+                Some(stderr)
+            },
         }
     }
 }
