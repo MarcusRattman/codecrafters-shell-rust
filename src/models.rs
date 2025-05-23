@@ -1,3 +1,5 @@
+use std::io::Error;
+
 pub struct Binary {
     pub path: String,
     pub name: String,
@@ -12,6 +14,7 @@ pub enum CommandParseError {
 #[derive(Debug)]
 pub enum IOError {
     NoSuchDir(String),
+    StdError(Error),
     FileWriteError,
 }
 

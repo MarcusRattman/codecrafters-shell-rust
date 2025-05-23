@@ -69,6 +69,7 @@ pub fn run_binary(command: String, args: Vec<String>) -> Result<String, CommandP
             let result = String::from_utf8(output.stdout).unwrap().trim().to_string();
             return Ok(result);
         }
+
         let err_msg = format!("{}: nonexistent: No such file or directory", command);
         Err(CommandParseError::BinExecError(err_msg))
     } else {
