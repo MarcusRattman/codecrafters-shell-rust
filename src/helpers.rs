@@ -13,28 +13,31 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
 
     let mut filename: Option<String> = None;
     let mut parsed_iter = parsed.into_iter();
-    let mut left: Vec<String> = vec![];
+    let mut left: Vec<String> = vec![]; // as in left side of the expression
 
+    // Parsing args 1 by 1 trying to find the redirect operator
     while let Some(arg) = parsed_iter.next() {
         match arg.as_str() {
-            ">" | "1>" => {
+            ">" => {
                 if let Some(s) = parsed_iter.next() {
                     filename = Some(s);
                     break;
                 }
             }
-            _ => left.push(arg.to_string()),
+            _ => left.push(arg.to_string()), // Forming left side of the expression
         };
     }
 
-    let result = exec_command(left);
+    let result = exec_command(left)?;
 
+    // If operator is found and filename is set, we're gonna make a new file and write
+    // left side of the expression into it
     if let Some(fname) = filename {
-        if let Err(e) = result {
-            return Err(e);
-        }
+        // if let Err(e) = result {
+        //     return Err(e);
+        // }
 
-        let result = result.unwrap();
+        // let result = result.unwrap();
         let written = write_to_file(fname, (&result.stdout).clone().unwrap());
 
         match written {
@@ -45,7 +48,7 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
             Err(e) => Err(CommandParseError::ComposableError(IOError::StdError(e))),
         }
     } else {
-        result
+        Ok(result)
     }
 }
 
@@ -66,7 +69,7 @@ fn exec_command(mut to_match: Vec<String>) -> Result<IOStream, CommandParseError
             let code: i32 = args[0].parse().unwrap_or(-1);
             exit(code);
         }
-        "echo" => Ok(echo_command(args)),
+        "echo" => Ok(echo_command(args)), // echo cannot fail so whatever
         "type" => type_command(args),
         "pwd" => {
             let pwd = pwd_command();
@@ -78,6 +81,7 @@ fn exec_command(mut to_match: Vec<String>) -> Result<IOStream, CommandParseError
         "cd" => {
             let cd = cd_command(args);
             match cd {
+                // Since cd has no output (yet), IOStream's gonna be None
                 Ok(_) => Ok(IOStream {
                     stdout: None,
                     stderr: None,

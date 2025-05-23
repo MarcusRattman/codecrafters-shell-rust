@@ -43,9 +43,9 @@ pub fn pwd_command() -> Result<IOStream, IOError> {
     Err(IOError::NoSuchDir("Incorrect directory".to_string()))
 }
 
-pub fn type_command(args: Vec<String>) -> Result<IOStream, CommandParseError> {
+pub fn type_command(command: Vec<String>) -> Result<IOStream, CommandParseError> {
     let binaries = get_binaries().unwrap();
-    let args = args.first();
+    let args = command.first();
 
     if args.is_none() {
         return Err(CommandParseError::WrongArgsNum);
@@ -81,6 +81,9 @@ pub fn run_binary(command: String, args: Vec<String>) -> Result<IOStream, IOErro
     if binaries.iter().find(|bin| bin.name.eq(&command)).is_some() {
         let exec = Command::new(&command).args(args).output();
 
+        // Since having non empty stderr doesn't make exec Err
+        // I'm gonna combine both outputs and return an IOStream object
+
         if let Ok(output) = exec {
             let stdout = String::from_utf8(output.stdout).unwrap().trim().to_string();
             let stderr = String::from_utf8(output.stderr).unwrap().trim().to_string();
@@ -90,9 +93,11 @@ pub fn run_binary(command: String, args: Vec<String>) -> Result<IOStream, IOErro
             return Ok(result);
         }
 
+        // If somehow exec failed to execute a binary, we're gonna throw an Err
         let err = IOError::StdError(exec.unwrap_err());
         Err(err)
     } else {
+        // If binary doesn't exist in local $PATH
         let error_msg = format!("{}: not found", command);
         Err(IOError::NoSuchDir(error_msg))
     }
