@@ -43,17 +43,17 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
         }
         let result = result.unwrap();
         let to_write = match stream_to_write {
-            IOStreamType::StdOut => &result.stdout,
+            IOStreamType::StdOut => &result.stdout.clone().unwrap(),
             IOStreamType::StdErr => {
                 if result.stderr.is_some() {
-                    &result.stderr
+                    &result.stderr.clone().unwrap()
                 } else {
-                    &result.stdout
+                    &String::new()
                 }
             }
         };
 
-        let written = write_to_file(fname, to_write.clone().unwrap());
+        let written = write_to_file(fname, to_write.clone());
         // Shitshow
         if let Err(e) = written {
             return Err(CommandParseError::ComposableError(IOError::StdError(e)));
