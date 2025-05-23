@@ -28,7 +28,11 @@ impl IOStream {
             return self.stdout.clone();
         }
 
-        self.stderr.clone()
+        if self.stderr.is_some() {
+            return self.stderr.clone();
+        }
+
+        None
     }
 }
 

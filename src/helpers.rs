@@ -38,9 +38,17 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
 
         let result = result.unwrap();
 
+        let mut skip_err = false;
+        let mut skip_out = false;
         let written = match op.as_str() {
-            "2>" => write_to_file(fname, (&result.stderr).clone().unwrap()),
-            _ => write_to_file(fname, (&result.stdout).clone().unwrap()),
+            "2>" => {
+                skip_err = true;
+                write_to_file(fname, (&result.stderr).clone().unwrap())
+            }
+            _ => {
+                skip_out = true;
+                write_to_file(fname, (&result.stdout).clone().unwrap())
+            }
         };
 
         //let written = write_to_file(fname, (&result.stdout).clone().unwrap());
@@ -50,14 +58,9 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
             return Err(CommandParseError::ComposableError(IOError::StdError(e)));
         }
 
-        let stderr = match op.as_str() {
-            "2>" => result.stderr,
-            _ => None,
-        };
-
         return Ok(IOStream {
-            stdout: result.stdout,
-            stderr,
+            stdout: if skip_out { None } else { result.stdout },
+            stderr: if skip_err { None } else { result.stderr },
         });
     }
     result
