@@ -50,9 +50,14 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
             return Err(CommandParseError::ComposableError(IOError::StdError(e)));
         }
 
+        let stderr = match op.as_str() {
+            "2>" => result.stderr,
+            _ => None,
+        };
+
         return Ok(IOStream {
-            stdout: None,
-            stderr: None,
+            stdout: result.stdout,
+            stderr,
         });
     }
     result
