@@ -3,6 +3,7 @@ mod helpers;
 mod models;
 
 use helpers::parse_command;
+use models::{CommandParseError, IOError};
 use std::io::{self, Write};
 
 fn main() {
@@ -20,7 +21,15 @@ fn main() {
                     println!("{}", val);
                 }
             }
-            Err(e) => println!("{}", e.0),
+            Err(e) => match e {
+                CommandParseError::CommandNotFound(e) => println!("{}", e),
+                CommandParseError::ComposableError(e) => match e {
+                    IOError::NoSuchDir(e) => println!("{}", e),
+                    _ => (),
+                },
+                CommandParseError::BinExecError => (),
+                CommandParseError::WrongArgsNum => (),
+            },
         }
     }
 }

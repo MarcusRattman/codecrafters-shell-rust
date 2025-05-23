@@ -1,91 +1,82 @@
 use crate::commands::*;
-use crate::models::{CommandParseError, SPECIAL_CHARACTERS};
-use std::fs::File;
-use std::io::{self, Write};
+use crate::models::{CommandParseError, IOError, SPECIAL_CHARACTERS};
+use std::fs;
 use std::process::exit;
 
-// Updated parse_command to handle output redirection
 pub fn parse_command(input: &str) -> Result<String, CommandParseError> {
-    // First, parse the input into tokens
-    let mut tokens = parse_input(input);
+    let parsed = parse_input(input);
 
-    if tokens.is_empty() {
+    if parsed.is_empty() {
         return Ok(String::new());
     }
 
-    // Check for output redirection '>' operator
-    let mut output_file: Option<String> = None;
-    let mut command_tokens = Vec::new();
-    let mut tokens_iter = tokens.into_iter();
+    let mut filename: Option<String> = None;
+    let mut parsed_iter = parsed.into_iter();
+    let mut left: Vec<String> = vec![];
 
-    while let Some(token) = tokens_iter.next() {
-        if token == ">" {
-            // Expect the next token to be the filename
-            if let Some(filename) = tokens_iter.next() {
-                output_file = Some(filename);
-            } else {
-                // No filename provided after '>'
-                return Err(CommandParseError(
-                    "No filename specified for output redirection".to_string(),
-                ));
+    while let Some(arg) = parsed_iter.next() {
+        match arg.as_str() {
+            ">" | "1>" => {
+                if let Some(s) = parsed_iter.next() {
+                    filename = Some(s);
+                    break;
+                }
             }
-        } else {
-            command_tokens.push(token);
-        }
-    }
-
-    if command_tokens.is_empty() {
-        return Ok(String::new());
-    }
-
-    // Separate command and args
-    let command = command_tokens.remove(0);
-    let args = command_tokens;
-
-    // Prepare output redirection if needed
-    if let Some(filename) = output_file {
-        // Capture the output of command execution
-        let result = match command.as_str() {
-            "exit" => {
-                let code: i32 = args.get(0).and_then(|s| s.parse().ok()).unwrap_or(-1);
-                // Exit the process
-                exit(code);
-            }
-            "echo" => Ok(echo_command(args)),
-            "type" => type_command(args),
-            "pwd" => pwd_command(),
-            "cd" => cd_command(args),
-            _ => run_binary(&command, args),
+            _ => left.push(arg.to_string()),
         };
+    }
 
-        // Write the result to the specified file
-        match result {
-            Ok(output_str) => {
-                let mut file =
-                    File::create(&filename).map_err(|e| CommandParseError(e.to_string()))?;
-                file.write_all(output_str.as_bytes())
-                    .map_err(|e| CommandParseError(e.to_string()))?;
-                Ok(String::new())
-            }
-            Err(e) => Err(e),
+    let result = exec_command(left);
+
+    if let Some(fname) = filename {
+        let result = result.unwrap();
+        let written = write_to_file(fname, result);
+        match written {
+            Ok(_) => Ok(String::new()),
+            Err(e) => Err(CommandParseError::ComposableError(e)),
         }
     } else {
-        // No redirection, just run command normally
-        match command.as_str() {
-            "exit" => {
-                let code: i32 = args.get(0).and_then(|s| s.parse().ok()).unwrap_or(-1);
-                exit(code);
-            }
-            "echo" => Ok(echo_command(args)),
-            "type" => type_command(args),
-            "pwd" => pwd_command(),
-            "cd" => cd_command(args),
-            _ => run_binary(&command, args),
-        }
+        result
     }
 }
 
-// Your existing parse_input function remains unchanged
+fn write_to_file(filename: String, content: String) -> Result<(), IOError> {
+    let result = fs::write(filename, content);
+    match result {
+        Ok(_) => Ok(()),
+        Err(_) => Err(IOError::FileWriteError),
+    }
+}
+
+fn exec_command(mut to_match: Vec<String>) -> Result<String, CommandParseError> {
+    let command = to_match.remove(0);
+    let args = to_match;
+
+    match command.as_str() {
+        "exit" => {
+            let code: i32 = args[0].parse().unwrap_or(-1);
+            exit(code);
+        }
+        "echo" => Ok(echo_command(args)),
+        "type" => type_command(args),
+        "pwd" => {
+            let pwd = pwd_command();
+            match pwd {
+                Ok(s) => Ok(s),
+                Err(e) => Err(CommandParseError::ComposableError(e)),
+            }
+        }
+        "cd" => {
+            let cd = cd_command(args);
+            match cd {
+                Ok(s) => Ok(s),
+                Err(e) => Err(CommandParseError::ComposableError(e)),
+            }
+        }
+        _ => run_binary(command, args),
+    }
+}
+
 fn parse_input(args: &str) -> Vec<String> {
     let args = args.trim();
     let mut result = Vec::<String>::new();

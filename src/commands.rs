@@ -1,11 +1,11 @@
-use crate::models::{Binary, CommandParseError, BUILTINS};
+use crate::models::{Binary, CommandParseError, IOError, BUILTINS};
 use std::{env, io, path::Path, process::Command};
 
 pub fn echo_command(args: Vec<String>) -> String {
     format!("{}", args.join(" "))
 }
 
-pub fn cd_command(args: Vec<String>) -> Result<String, CommandParseError> {
+pub fn cd_command(args: Vec<String>) -> Result<String, IOError> {
     let home = env::var("HOME").unwrap();
     let args = args.join("");
 
@@ -21,20 +21,20 @@ pub fn cd_command(args: Vec<String>) -> Result<String, CommandParseError> {
 
     if cd.is_err() {
         let error_msg = format!("cd: {}: No such file or directory", path.display());
-        return Err(CommandParseError(error_msg));
+        return Err(IOError::NoSuchDir(error_msg));
     }
 
     Ok(String::new())
 }
 
-pub fn pwd_command() -> Result<String, CommandParseError> {
+pub fn pwd_command() -> Result<String, IOError> {
     let dir = env::current_dir();
 
     if let Ok(dir) = dir {
         return Ok(dir.to_str().unwrap().to_string());
     }
 
-    Err(CommandParseError("Incorrect directory".to_string()))
+    Err(IOError::NoSuchDir("Incorrect directory".to_string()))
 }
 
 pub fn type_command(args: Vec<String>) -> Result<String, CommandParseError> {
@@ -42,7 +42,7 @@ pub fn type_command(args: Vec<String>) -> Result<String, CommandParseError> {
     let args = args.first();
 
     if args.is_none() {
-        return Err(CommandParseError("No arguments supplied".to_string()));
+        return Err(CommandParseError::WrongArgsNum);
     }
 
     let args = args.unwrap().as_str();
@@ -56,26 +56,23 @@ pub fn type_command(args: Vec<String>) -> Result<String, CommandParseError> {
     }
 
     let error_msg = format!("{}: not found", args);
-    Err(CommandParseError(error_msg))
+    Err(CommandParseError::CommandNotFound(error_msg))
 }
 
-pub fn run_binary(command: &str, args: Vec<String>) -> Result<String, CommandParseError> {
+pub fn run_binary(command: String, args: Vec<String>) -> Result<String, CommandParseError> {
     let binaries = get_binaries().unwrap();
-    let error_msg: String;
 
-    if binaries.iter().find(|bin| bin.name.eq(command)).is_some() {
+    if binaries.iter().find(|bin| bin.name.eq(&command)).is_some() {
         let exec = Command::new(command).args(args).output();
 
         if let Ok(output) = exec {
             let result = String::from_utf8(output.stdout).unwrap().trim().to_string();
             return Ok(result);
         }
-
-        error_msg = "Error while running the binary".to_string();
-        Err(CommandParseError(error_msg))
+        Err(CommandParseError::BinExecError)
     } else {
-        error_msg = format!("{}: command not found", command);
-        Err(CommandParseError(error_msg))
+        let error_msg = format!("{}: not found", command);
+        Err(CommandParseError::CommandNotFound(error_msg))
     }
 }
 
