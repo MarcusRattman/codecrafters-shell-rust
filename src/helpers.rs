@@ -44,7 +44,13 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
         let result = result.unwrap();
         let to_write = match stream_to_write {
             IOStreamType::StdOut => &result.stdout,
-            IOStreamType::StdErr => &result.stderr,
+            IOStreamType::StdErr => {
+                if result.stderr.is_some() {
+                    &result.stderr
+                } else {
+                    &result.stdout
+                }
+            }
         };
 
         let written = write_to_file(fname, to_write.clone().unwrap());
