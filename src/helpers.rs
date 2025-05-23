@@ -17,7 +17,7 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
 
     while let Some(arg) = parsed_iter.next() {
         match arg.as_str() {
-            ">" | "1>" => {
+            ">" => {
                 if let Some(s) = parsed_iter.next() {
                     filename = Some(s);
                     break;
