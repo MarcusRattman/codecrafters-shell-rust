@@ -1,7 +1,7 @@
 use crate::models::{Binary, CommandParseError, BUILTINS};
 use std::{env, io, path::Path, process::Command};
 
-pub fn command_echo(args: Vec<String>) -> String {
+pub fn echo_command(args: Vec<String>) -> String {
     format!("{}", args.join(" "))
 }
 
