@@ -13,7 +13,7 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
 
     let mut filename: Option<String> = None;
     let mut parsed_iter = parsed.into_iter();
-    let mut left: Vec<String> = vec![]; // as in left side of the expression
+    let mut left: Vec<String> = vec![];
 
     // Parsing args 1 by 1 trying to find the redirect operator
     while let Some(arg) = parsed_iter.next() {
@@ -30,8 +30,6 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
 
     let result = exec_command(left);
 
-    // If operator is found and filename is set, we're gonna make a new file and write
-    // left side of the expression into it
     if let Some(fname) = filename {
         if let Err(e) = result {
             return Err(e);
@@ -45,11 +43,7 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
                 stdout: None,
                 stderr: result.stderr,
             }),
-            Err(e) => {
-                // utter shitshow
-                let err = CommandParseError::ComposableError(IOError::StdError(e));
-                Err(err)
-            }
+            Err(e) => Err(CommandParseError::ComposableError(IOError::StdError(e))),
         }
     } else {
         result
