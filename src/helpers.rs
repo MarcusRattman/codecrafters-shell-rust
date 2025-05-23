@@ -52,7 +52,7 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
 
         return Ok(IOStream {
             stdout: None,
-            stderr: result.stderr,
+            stderr: None,
         });
     }
     result
