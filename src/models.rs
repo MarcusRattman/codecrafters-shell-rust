@@ -32,12 +32,6 @@ impl IOStream {
     }
 }
 
-impl std::fmt::Display for IOStream {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "")
-    }
-}
-
 pub struct Binary {
     pub path: String,
     pub name: String,
@@ -70,7 +64,6 @@ impl std::fmt::Display for CommandParseError {
 pub enum IOError {
     NoSuchDir(String),
     StdError(Error),
-    StreamError(IOStream),
 }
 
 impl std::fmt::Display for IOError {
@@ -78,7 +71,6 @@ impl std::fmt::Display for IOError {
         match self {
             IOError::NoSuchDir(s) => write!(f, "{}", s),
             IOError::StdError(e) => write!(f, "{}", e),
-            IOError::StreamError(ios) => write!(f, "{}", ios),
         }
     }
 }

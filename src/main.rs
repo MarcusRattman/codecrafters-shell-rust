@@ -3,7 +3,6 @@ mod helpers;
 mod models;
 
 use helpers::parse_command;
-use models::{CommandParseError, IOError};
 use std::io::{self, Write};
 
 fn main() {
