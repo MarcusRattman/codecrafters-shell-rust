@@ -18,11 +18,15 @@ fn main() {
 
         match result {
             Ok(stream) => {
-                if let Some(stdout) = stream.stdout {
-                    if stdout.len() > 0 {
-                        println!("{}", stdout);
-                    }
+                if let Some(s) = stream.print() {
+                    println!("{}", s);
                 }
+
+                // if let Some(stdout) = stream.stdout {
+                //     if stdout.len() > 0 {
+                //         println!("{}", stdout);
+                //     }
+                // }
             }
             Err(e) => match e {
                 CommandParseError::CommandNotFound(e) => println!("{}", e),

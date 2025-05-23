@@ -22,6 +22,14 @@ impl IOStream {
             },
         }
     }
+
+    pub fn print(&self) -> Option<String> {
+        if self.stdout.is_some() {
+            return self.stdout.clone();
+        }
+
+        self.stderr.clone()
+    }
 }
 
 pub struct Binary {
