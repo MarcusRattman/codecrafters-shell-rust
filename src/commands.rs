@@ -63,13 +63,14 @@ pub fn run_binary(command: String, args: Vec<String>) -> Result<String, CommandP
     let binaries = get_binaries().unwrap();
 
     if binaries.iter().find(|bin| bin.name.eq(&command)).is_some() {
-        let exec = Command::new(command).args(args).output();
+        let exec = Command::new(&command).args(args).output();
 
         if let Ok(output) = exec {
             let result = String::from_utf8(output.stdout).unwrap().trim().to_string();
             return Ok(result);
         }
-        Err(CommandParseError::BinExecError)
+        let err_msg = format!("{}: nonexistent: No such file or directory", command);
+        Err(CommandParseError::BinExecError(err_msg))
     } else {
         let error_msg = format!("{}: not found", command);
         Err(CommandParseError::CommandNotFound(error_msg))
