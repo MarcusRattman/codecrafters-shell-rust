@@ -8,7 +8,6 @@ pub struct Binary {
 pub enum CommandParseError {
     ComposableError(IOError),
     CommandNotFound(String),
-    BinExecError(String),
     WrongArgsNum,
 }
 #[derive(Debug)]

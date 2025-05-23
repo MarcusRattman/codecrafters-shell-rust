@@ -1,5 +1,10 @@
 use crate::models::{Binary, CommandParseError, IOError, BUILTINS};
-use std::{env, io, path::Path, process::Command};
+use std::{
+    env,
+    io::{self, Error},
+    path::Path,
+    process::Command,
+};
 
 pub fn echo_command(args: Vec<String>) -> String {
     format!("{}", args.join(" "))
@@ -59,7 +64,7 @@ pub fn type_command(args: Vec<String>) -> Result<String, CommandParseError> {
     Err(CommandParseError::CommandNotFound(error_msg))
 }
 
-pub fn run_binary(command: String, args: Vec<String>) -> Result<String, CommandParseError> {
+pub fn run_binary(command: String, args: Vec<String>) -> Result<String, IOError> {
     let binaries = get_binaries().unwrap();
 
     if binaries.iter().find(|bin| bin.name.eq(&command)).is_some() {
@@ -70,11 +75,11 @@ pub fn run_binary(command: String, args: Vec<String>) -> Result<String, CommandP
             return Ok(result);
         }
 
-        let err_msg = format!("{}: nonexistent: No such file or directory", command);
-        Err(CommandParseError::BinExecError(err_msg))
+        let err = IOError::StdError(exec.unwrap_err());
+        Err(err)
     } else {
         let error_msg = format!("{}: not found", command);
-        Err(CommandParseError::CommandNotFound(error_msg))
+        Err(IOError::NoSuchDir(error_msg))
     }
 }
 
