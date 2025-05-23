@@ -23,15 +23,11 @@ fn main() {
                 }
             }
             Err(e) => match e {
-                //CommandParseError::CommandNotFound(e) => println!("{}", e),
                 CommandParseError::ComposableError(e) => match e {
-                    IOError::StreamError(stream) => println!("{}", stream.stderr.unwrap()),
+                    //IOError::StreamError(stream) => println!("{}", stream.stderr.unwrap()),
                     e => println!("{}", e),
-                    //IOError::NoSuchDir(e) => println!("{}", e),
-                    //IOError::StdError(e) => println!("{}", e),
                 },
                 e => println!("{}", e),
-                //CommandParseError::WrongArgsNum => (),
             },
         }
     }
