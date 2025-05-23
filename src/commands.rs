@@ -1,4 +1,4 @@
-use crate::models::{Binary, CommandParseError, IOError, BUILTINS};
+use crate::models::{Binary, CommandParseError, IOError, IOStream, BUILTINS};
 use std::{
     env,
     io::{self},
@@ -64,20 +64,19 @@ pub fn type_command(args: Vec<String>) -> Result<String, CommandParseError> {
     Err(CommandParseError::CommandNotFound(error_msg))
 }
 
-pub fn run_binary(command: String, args: Vec<String>) -> Result<String, IOError> {
+pub fn run_binary(command: String, args: Vec<String>) -> Result<IOStream, IOError> {
     let binaries = get_binaries().unwrap();
 
     if binaries.iter().find(|bin| bin.name.eq(&command)).is_some() {
         let exec = Command::new(&command).args(args).output();
 
         if let Ok(output) = exec {
-            if output.stderr.is_empty() {
-                let result = String::from_utf8(output.stdout).unwrap().trim().to_string();
-                return Ok(result);
-            } else {
-                let result = String::from_utf8(output.stderr).unwrap().trim().to_string();
-                return Err(IOError::NoSuchDir(result));
-            }
+            let stdout = String::from_utf8(output.stdout).unwrap().trim().to_string();
+            let stderr = String::from_utf8(output.stderr).unwrap().trim().to_string();
+
+            let result = IOStream::new(stdout, stderr);
+
+            return Ok(result);
         }
 
         let err = IOError::StdError(exec.unwrap_err());
@@ -107,10 +106,7 @@ fn get_binaries() -> Result<Vec<Binary>, io::Error> {
             if path.is_file() {
                 let path_str = path.to_str()?.to_string();
                 let name = path.file_name()?.to_str()?.to_string();
-                Some(Binary {
-                    path: path_str,
-                    name,
-                })
+                Some(Binary::new(path_str, name))
             } else {
                 None
             }

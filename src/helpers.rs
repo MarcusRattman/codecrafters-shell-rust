@@ -81,7 +81,7 @@ fn exec_command(mut to_match: Vec<String>) -> Result<String, CommandParseError> 
         _ => {
             let exec = run_binary(command, args);
             match exec {
-                Ok(s) => Ok(s),
+                Ok(s) => Ok(s.stdout),
                 Err(e) => Err(CommandParseError::ComposableError(e)),
             }
         }
