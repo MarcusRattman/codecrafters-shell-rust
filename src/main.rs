@@ -25,7 +25,7 @@ fn main() {
                 CommandParseError::CommandNotFound(e) => println!("{}", e),
                 CommandParseError::ComposableError(e) => match e {
                     IOError::NoSuchDir(e) => println!("{}", e),
-                    _ => (),
+                    IOError::StdError(e) => println!("{}", e),
                 },
                 CommandParseError::BinExecError(e) => println!("{}", e),
                 CommandParseError::WrongArgsNum => (),

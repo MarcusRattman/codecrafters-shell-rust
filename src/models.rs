@@ -15,7 +15,6 @@ pub enum CommandParseError {
 pub enum IOError {
     NoSuchDir(String),
     StdError(Error),
-    FileWriteError,
 }
 
 pub const BUILTINS: &[&str] = &["exit", "echo", "type", "pwd", "cd"];
