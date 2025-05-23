@@ -81,10 +81,12 @@ pub fn run_binary(command: String, args: Vec<String>) -> Result<IOStream, IOErro
     if binaries.iter().find(|bin| bin.name.eq(&command)).is_some() {
         let exec = Command::new(&command).args(args).output();
 
+        // non-empty stderr doesn't mean exec will be Err
+        // so we're splitting both outputs and forming an IOStream object
+
         if let Ok(output) = exec {
             let stdout = String::from_utf8(output.stdout).unwrap().trim().to_string();
             let stderr = String::from_utf8(output.stderr).unwrap().trim().to_string();
-
             let result = IOStream::new(stdout, stderr);
 
             return Ok(result);

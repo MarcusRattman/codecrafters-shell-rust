@@ -17,7 +17,7 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
 
     while let Some(arg) = parsed_iter.next() {
         match arg.as_str() {
-            ">" => {
+            ">" | "1>" => {
                 if let Some(s) = parsed_iter.next() {
                     filename = Some(s);
                     break;
@@ -37,16 +37,17 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
         let result = result.unwrap();
         let written = write_to_file(fname, (&result.stdout).clone().unwrap());
 
-        match written {
-            Ok(_) => Ok(IOStream {
-                stdout: None,
-                stderr: result.stderr,
-            }),
-            Err(e) => Err(CommandParseError::ComposableError(IOError::StdError(e))),
+        // Shitshow
+        if let Err(e) = written {
+            return Err(CommandParseError::ComposableError(IOError::StdError(e)));
         }
-    } else {
-        result
+
+        return Ok(IOStream {
+            stdout: None,
+            stderr: result.stderr,
+        });
     }
+    result
 }
 
 fn write_to_file(filename: String, content: String) -> Result<(), Error> {
