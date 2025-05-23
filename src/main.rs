@@ -19,9 +19,9 @@ fn main() {
         match result {
             Ok(stream) => {
                 let stdout = stream.stdout.unwrap();
-                if stdout.len() > 0 {
-                    println!("{}", stdout);
-                }
+                //if stdout.len() > 0 {
+                //    println!("{}", stdout);
+                //}
             }
             Err(e) => match e {
                 CommandParseError::CommandNotFound(e) => println!("{}", e),
