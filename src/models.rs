@@ -32,6 +32,12 @@ impl IOStream {
     }
 }
 
+impl std::fmt::Display for IOStream {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "")
+    }
+}
+
 pub struct Binary {
     pub path: String,
     pub name: String,
@@ -50,11 +56,31 @@ pub enum CommandParseError {
     WrongArgsNum,
 }
 
+impl std::fmt::Display for CommandParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CommandParseError::ComposableError(ioe) => write!(f, "{}", ioe),
+            CommandParseError::CommandNotFound(s) => write!(f, "{}", s),
+            _ => write!(f, ""),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub enum IOError {
     NoSuchDir(String),
     StdError(Error),
     StreamError(IOStream),
+}
+
+impl std::fmt::Display for IOError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            IOError::NoSuchDir(s) => write!(f, "{}", s),
+            IOError::StdError(e) => write!(f, "{}", e),
+            IOError::StreamError(ios) => write!(f, "{}", ios),
+        }
+    }
 }
 
 pub const BUILTINS: &[&str] = &["exit", "echo", "type", "pwd", "cd"];
