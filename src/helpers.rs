@@ -1,7 +1,8 @@
 use crate::commands::*;
-use crate::models::{CommandParseError, IOError, IOStream, IOStreamType, SPECIAL_CHARACTERS};
-use std::fs;
-use std::io::{Error, Write};
+use crate::models::{
+    CommandParseError, IOError, IOStream, IOStreamType, WriteMode, SPECIAL_CHARACTERS,
+};
+use std::io::Error;
 use std::process::exit;
 
 pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
@@ -14,6 +15,7 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
     let mut parsed_iter = parsed.into_iter();
     let mut left: Vec<String> = vec![];
     let mut stream_to_write = IOStreamType::StdOut;
+    let mut writemode = WriteMode::CreateNew;
 
     while let Some(arg) = parsed_iter.next() {
         match arg.as_str() {
@@ -21,6 +23,7 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
                 if let Some(s) = parsed_iter.next() {
                     filename = Some(s);
                     stream_to_write = IOStreamType::StdOut;
+                    writemode = WriteMode::CreateNew;
                     break;
                 }
             }
@@ -28,7 +31,22 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
                 if let Some(s) = parsed_iter.next() {
                     filename = Some(s);
                     stream_to_write = IOStreamType::StdErr;
+                    writemode = WriteMode::CreateNew;
                     break;
+                }
+            }
+            "1>>" | ">>" => {
+                if let Some(s) = parsed_iter.next() {
+                    filename = Some(s);
+                    stream_to_write = IOStreamType::StdOut;
+                    writemode = WriteMode::AppendExisting;
+                }
+            }
+            "2>>" => {
+                if let Some(s) = parsed_iter.next() {
+                    filename = Some(s);
+                    stream_to_write = IOStreamType::StdErr;
+                    writemode = WriteMode::AppendExisting;
                 }
             }
             _ => left.push(arg.to_string()),
@@ -43,7 +61,7 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
         }
         let result = result.unwrap();
 
-        let written = write_to_file(fname, &result, &stream_to_write);
+        let written = write_to_file(fname, &result, &stream_to_write, &writemode);
         // Shitshow
         if let Err(e) = written {
             return Err(CommandParseError::ComposableError(IOError::StdError(e)));
@@ -65,26 +83,38 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
     result
 }
 
-fn write_to_file(filename: String, stream: &IOStream, stype: &IOStreamType) -> Result<(), Error> {
-    let mut file = fs::File::create_new(&filename)?;
+fn write_to_file(
+    filename: String,
+    stream: &IOStream,
+    stream_type: &IOStreamType,
+    writemode: &WriteMode,
+) -> Result<(), Error> {
+    match writemode {
+        WriteMode::AppendExisting => (),
+        WriteMode::CreateNew => (),
+    }
 
-    let stdout = &stream.stdout;
-    let stderr = &stream.stderr;
+    //let mut file = fs::File::create_new(&filename)?;
 
-    let text = match stype {
-        IOStreamType::StdOut => stdout.clone().unwrap(),
+    let stdout = stream.stdout.clone();
+    let stderr = stream.stderr.clone();
+
+    let text = match stream_type {
+        IOStreamType::StdOut => stdout.unwrap(),
         IOStreamType::StdErr => {
             if stderr.is_some() {
-                stderr.clone().unwrap()
+                stderr.unwrap()
             } else {
                 String::new()
             }
         }
     };
 
-    let text = text.as_bytes();
+    stream.write_to_file(&filename, &text, writemode)?;
 
-    file.write_all(text)?;
+    //let text = text.as_bytes();
+
+    //file.write_all(text)?;
 
     Ok(())
 }

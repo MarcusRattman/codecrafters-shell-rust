@@ -1,4 +1,7 @@
-use std::io::Error;
+use std::{
+    fs::File,
+    io::{Error, Write},
+};
 
 #[derive(Debug)]
 pub struct IOStream {
@@ -23,16 +26,29 @@ impl IOStream {
         }
     }
 
-    pub fn print(&self) -> Option<String> {
-        if self.stdout.is_some() {
-            return self.stdout.clone();
+    pub fn print(&self) -> Option<&String> {
+        match (self.stdout.is_some(), self.stderr.is_some()) {
+            (true, _) => self.stdout.as_ref(),
+            (_, true) => self.stderr.as_ref(),
+            _ => None,
         }
+    }
 
-        if self.stderr.is_some() {
-            return self.stderr.clone();
+    pub fn write_to_file(
+        &self,
+        path: &str,
+        content: &str,
+        writemode: &WriteMode,
+    ) -> Result<(), Error> {
+        let file = match writemode {
+            WriteMode::CreateNew => File::create_new(path),
+            WriteMode::AppendExisting => File::options().append(true).open(path),
+        };
+
+        match file {
+            Ok(mut f) => f.write_all(content.as_bytes()),
+            Err(e) => Err(e),
         }
-
-        None
     }
 }
 
@@ -73,6 +89,11 @@ pub enum IOError {
 pub enum IOStreamType {
     StdErr,
     StdOut,
+}
+
+pub enum WriteMode {
+    AppendExisting,
+    CreateNew,
 }
 
 impl std::fmt::Display for IOError {
