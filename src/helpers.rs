@@ -94,8 +94,6 @@ fn write_to_file(
         WriteMode::CreateNew => (),
     }
 
-    //let mut file = fs::File::create_new(&filename)?;
-
     let stdout = stream.stdout.clone();
     let stderr = stream.stderr.clone();
 
@@ -111,10 +109,6 @@ fn write_to_file(
     };
 
     stream.write_to_file(&filename, &text, writemode)?;
-
-    //let text = text.as_bytes();
-
-    //file.write_all(text)?;
 
     Ok(())
 }
