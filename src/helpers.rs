@@ -98,7 +98,13 @@ fn write_to_file(
     let stderr = stream.stderr.clone();
 
     let text = match stream_type {
-        IOStreamType::StdOut => stdout.unwrap(),
+        IOStreamType::StdOut => {
+            if stdout.is_some() {
+                stdout.unwrap()
+            } else {
+                String::new()
+            }
+        }
         IOStreamType::StdErr => {
             if stderr.is_some() {
                 stderr.unwrap()
