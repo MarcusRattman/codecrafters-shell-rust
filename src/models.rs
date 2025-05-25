@@ -1,6 +1,7 @@
 use std::{
     fs::File,
     io::{Error, Write},
+    path::Path,
 };
 
 #[derive(Debug)]
@@ -42,7 +43,15 @@ impl IOStream {
     ) -> Result<(), Error> {
         let file = match writemode {
             WriteMode::CreateNew => File::create_new(path),
-            WriteMode::AppendExisting => File::options().append(true).open(path),
+            WriteMode::AppendExisting => {
+                let p = Path::new(path);
+
+                if !p.exists() {
+                    File::create_new(path)?;
+                }
+
+                File::options().append(true).open(path)
+            }
         };
 
         match file {
