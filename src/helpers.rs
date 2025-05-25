@@ -89,11 +89,6 @@ fn write_to_file(
     stream_type: &IOStreamType,
     writemode: &WriteMode,
 ) -> Result<(), Error> {
-    match writemode {
-        WriteMode::AppendExisting => (),
-        WriteMode::CreateNew => (),
-    }
-
     let stdout = stream.stdout.clone();
     let stderr = stream.stderr.clone();
 
