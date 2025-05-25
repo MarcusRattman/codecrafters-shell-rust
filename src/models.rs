@@ -41,22 +41,30 @@ impl IOStream {
         content: &str,
         writemode: &WriteMode,
     ) -> Result<(), Error> {
+        let mut created = false;
+
         let file = match writemode {
-            WriteMode::CreateNew => File::create_new(path),
+            WriteMode::CreateNew => {
+                let f = File::create_new(path);
+                created = true;
+                f
+            }
             WriteMode::AppendExisting => {
                 let p = Path::new(path);
 
                 if !p.exists() {
                     File::create_new(path)?;
+                    created = true;
                 }
 
                 File::options().append(true).open(path)
             }
         };
 
-        let content = match writemode {
-            WriteMode::CreateNew => content.to_string(),
-            WriteMode::AppendExisting => format!("\n{}", content),
+        let content = if created {
+            content.to_string()
+        } else {
+            format!("\n{}", content)
         };
 
         match file {
