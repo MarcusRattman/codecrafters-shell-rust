@@ -2,7 +2,7 @@ use crate::models::{Binary, CommandParseError, IOError, IOStream, BUILTINS};
 use std::{env, io::Error, path::Path, process::Command};
 
 pub fn echo_command(args: Vec<String>) -> IOStream {
-    let result = format!("{}\n", args.join(" "));
+    let result = format!("{}", args.join(" "));
     IOStream::new(result, String::new())
 }
 
