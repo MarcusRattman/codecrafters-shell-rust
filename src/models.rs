@@ -54,6 +54,11 @@ impl IOStream {
             }
         };
 
+        let content = match writemode {
+            WriteMode::CreateNew => content.to_string(),
+            WriteMode::AppendExisting => format!("{}\n", content),
+        };
+
         match file {
             Ok(mut f) => f.write_all(content.as_bytes()),
             Err(e) => Err(e),
