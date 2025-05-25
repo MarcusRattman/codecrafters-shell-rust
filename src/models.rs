@@ -56,7 +56,7 @@ impl IOStream {
 
         let content = match writemode {
             WriteMode::CreateNew => content.to_string(),
-            WriteMode::AppendExisting => format!("{}\n", content),
+            WriteMode::AppendExisting => format!("\n{}", content),
         };
 
         match file {
