@@ -38,10 +38,27 @@ impl IOStream {
     pub fn write_to_file(
         &self,
         path: &str,
-        content: &str,
+        stream_type: &IOStreamType,
         writemode: &WriteMode,
     ) -> Result<(), Error> {
         let mut created = false;
+
+        let content = match stream_type {
+            IOStreamType::StdOut => {
+                if self.stdout.is_some() {
+                    self.stdout.as_ref().unwrap()
+                } else {
+                    &String::new()
+                }
+            }
+            IOStreamType::StdErr => {
+                if self.stderr.is_some() {
+                    self.stderr.as_ref().unwrap()
+                } else {
+                    &String::new()
+                }
+            }
+        };
 
         let file = match writemode {
             WriteMode::CreateNew => {
@@ -128,4 +145,4 @@ impl std::fmt::Display for IOError {
 }
 
 pub const BUILTINS: &[&str] = &["exit", "echo", "type", "pwd", "cd"];
-pub const SPECIAL_CHARACTERS: [char; 3] = ['\\', '$', '\"'];
+pub const SPECIAL_CHARACTERS: &[char] = &['\\', '$', '\"'];

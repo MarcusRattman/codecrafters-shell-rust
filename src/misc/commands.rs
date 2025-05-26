@@ -1,4 +1,4 @@
-use crate::models::{Binary, CommandParseError, IOError, IOStream, BUILTINS};
+use crate::misc::models::{Binary, CommandParseError, IOError, IOStream, BUILTINS};
 use std::{env, io::Error, path::Path, process::Command};
 
 pub fn echo_command(args: Vec<String>) -> IOStream {

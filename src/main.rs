@@ -1,8 +1,6 @@
-mod commands;
-mod helpers;
-mod models;
-
-use helpers::parse_command;
+mod misc;
+use crate::misc::parsers::parse_command;
+//use parsers::parse_command;
 use std::io::{self, Write};
 
 fn main() {
