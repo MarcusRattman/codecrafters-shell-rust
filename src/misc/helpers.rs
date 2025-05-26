@@ -1,5 +1,5 @@
-use crate::misc::commands::{cd_command, echo_command, pwd_command, run_binary, type_command};
-use crate::misc::models::{CommandParseError, IOStream, IOStreamType, WriteMode};
+use super::commands::{cd_command, echo_command, pwd_command, run_binary, type_command};
+use super::models::{CommandParseError, IOStream, IOStreamType, WriteMode};
 
 use std::io::Error;
 use std::process::exit;
@@ -12,14 +12,8 @@ pub fn write_to_file(
 ) -> Result<IOStream, Error> {
     iostream.write_to_file(&filename, &stream_to_write, &writemode)?;
     let result = match stream_to_write {
-        IOStreamType::StdOut => IOStream {
-            stdout: None,
-            stderr: iostream.stderr,
-        },
-        IOStreamType::StdErr => IOStream {
-            stdout: iostream.stdout,
-            stderr: None,
-        },
+        IOStreamType::StdOut => IOStream::from_options(None, iostream.get_stderr()),
+        IOStreamType::StdErr => IOStream::from_options(iostream.get_stdout(), None),
     };
 
     Ok(result)
@@ -46,10 +40,7 @@ pub fn exec_command(mut command: Vec<String>) -> Result<IOStream, CommandParseEr
         "cd" => {
             let cd = cd_command(args);
             match cd {
-                Ok(_) => Ok(IOStream {
-                    stdout: None,
-                    stderr: None,
-                }),
+                Ok(_) => Ok(IOStream::new_empty()),
                 Err(e) => Err(CommandParseError::ComposableError(e)),
             }
         }

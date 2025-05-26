@@ -1,9 +1,9 @@
-use crate::misc::models::{Binary, CommandParseError, IOError, IOStream, BUILTINS};
+use super::models::{Binary, CommandParseError, IOError, IOStream, BUILTINS};
 use std::{env, io::Error, path::Path, process::Command};
 
 pub fn echo_command(args: Vec<String>) -> IOStream {
     let result = format!("{}", args.join(" "));
-    IOStream::new(result, String::new())
+    IOStream::new(&result, "")
 }
 
 pub fn cd_command(args: Vec<String>) -> Result<(), IOError> {
@@ -32,10 +32,8 @@ pub fn pwd_command() -> Result<IOStream, IOError> {
     let dir = env::current_dir();
 
     if let Ok(dir) = dir {
-        let result = IOStream {
-            stdout: Some(dir.to_str().unwrap().to_string()),
-            stderr: None,
-        };
+        let dir = dir.to_str().unwrap();
+        let result = IOStream::new(dir, "");
 
         return Ok(result);
     }
@@ -55,19 +53,13 @@ pub fn type_command(args: Vec<String>) -> Result<IOStream, CommandParseError> {
 
     if BUILTINS.contains(&args) {
         let stdout = format!("{} is a shell builtin", args);
-        let result = IOStream {
-            stdout: Some(stdout),
-            stderr: None,
-        };
+        let result = IOStream::new(&stdout, "");
         return Ok(result);
     }
 
     if let Some(binary) = binaries.iter().find(|binary| binary.name.eq(args)) {
         let stdout = format!("{} is {}", args, binary.path);
-        let result = IOStream {
-            stdout: Some(stdout),
-            stderr: None,
-        };
+        let result = IOStream::new(&stdout, "");
         return Ok(result);
     }
 
@@ -85,9 +77,9 @@ pub fn run_binary(command: String, args: Vec<String>) -> Result<IOStream, IOErro
         // so we're splitting both outputs and forming an IOStream object
 
         if let Ok(output) = exec {
-            let stdout = String::from_utf8(output.stdout).unwrap().trim().to_string();
-            let stderr = String::from_utf8(output.stderr).unwrap().trim().to_string();
-            let result = IOStream::new(stdout, stderr);
+            let stdout = String::from_utf8(output.stdout).unwrap();
+            let stderr = String::from_utf8(output.stderr).unwrap();
+            let result = IOStream::new(stdout.trim(), stderr.trim());
 
             return Ok(result);
         }

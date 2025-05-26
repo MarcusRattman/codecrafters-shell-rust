@@ -1,12 +1,12 @@
-use crate::misc::helpers::{exec_command, write_to_file};
-use crate::misc::models::{
+use super::helpers::{exec_command, write_to_file};
+use super::models::{
     CommandParseError, IOError, IOStream, IOStreamType, WriteMode, SPECIAL_CHARACTERS,
 };
 
-pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
-    let parsed = map_args(input);
+pub fn parse_input(input: &str) -> Result<IOStream, CommandParseError> {
+    let parsed = parse_chars(input);
     if parsed.is_empty() {
-        return Ok(IOStream::new(String::new(), String::new()));
+        return Ok(IOStream::new_empty());
     }
 
     let mut filename: Option<String> = None;
@@ -64,7 +64,7 @@ pub fn parse_command(input: &str) -> Result<IOStream, CommandParseError> {
     result
 }
 
-fn map_args(args: &str) -> Vec<String> {
+fn parse_chars(args: &str) -> Vec<String> {
     let args = args.trim();
     let mut result = Vec::<String>::new();
 

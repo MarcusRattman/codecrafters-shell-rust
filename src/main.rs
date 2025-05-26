@@ -1,6 +1,5 @@
 mod misc;
-use crate::misc::parsers::parse_command;
-//use parsers::parse_command;
+use misc::parsers::parse_input;
 use std::io::{self, Write};
 
 fn main() {
@@ -11,7 +10,7 @@ fn main() {
         io::stderr().flush().unwrap();
         io::stdin().read_line(&mut input).unwrap();
 
-        let result = parse_command(&input);
+        let result = parse_input(&input);
 
         match result {
             Ok(stream) => {

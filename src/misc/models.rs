@@ -6,33 +6,48 @@ use std::{
 
 #[derive(Debug)]
 pub struct IOStream {
-    pub stdout: Option<String>,
-    pub stderr: Option<String>,
+    stdout: Option<String>,
+    stderr: Option<String>,
 }
 
 impl IOStream {
-    pub fn new(stdout: String, stderr: String) -> Self {
+    pub fn new(stdout: &str, stderr: &str) -> Self {
         Self {
             stdout: if stdout.is_empty() {
                 None
             } else {
-                Some(stdout)
+                Some(stdout.to_string())
             },
 
             stderr: if stderr.is_empty() {
                 None
             } else {
-                Some(stderr)
+                Some(stderr.to_string())
             },
         }
     }
 
-    pub fn print(&self) -> Option<&String> {
-        match (self.stdout.is_some(), self.stderr.is_some()) {
-            (true, _) => self.stdout.as_ref(),
-            (_, true) => self.stderr.as_ref(),
-            _ => None,
+    pub fn from_options(stdout: Option<String>, stderr: Option<String>) -> Self {
+        Self { stdout, stderr }
+    }
+
+    pub fn new_empty() -> Self {
+        Self {
+            stdout: None,
+            stderr: None,
         }
+    }
+
+    pub fn get_stdout(&self) -> Option<String> {
+        self.stdout.clone()
+    }
+
+    pub fn get_stderr(&self) -> Option<String> {
+        self.stderr.clone()
+    }
+
+    pub fn print(&self) -> Option<&String> {
+        self.stdout.as_ref().or(self.stderr.as_ref())
     }
 
     pub fn write_to_file(
@@ -44,25 +59,13 @@ impl IOStream {
         let mut created = false;
 
         let content = match stream_type {
-            IOStreamType::StdOut => {
-                if self.stdout.is_some() {
-                    self.stdout.as_ref().unwrap()
-                } else {
-                    &String::new()
-                }
-            }
-            IOStreamType::StdErr => {
-                if self.stderr.is_some() {
-                    self.stderr.as_ref().unwrap()
-                } else {
-                    &String::new()
-                }
-            }
+            IOStreamType::StdOut => self.stdout.as_deref().unwrap_or_default(),
+            IOStreamType::StdErr => self.stderr.as_deref().unwrap_or_default(),
         };
 
-        let file = match writemode {
+        let mut file = match writemode {
             WriteMode::CreateNew => {
-                let f = File::create_new(path);
+                let f = File::create_new(path)?;
                 created = true;
                 f
             }
@@ -74,7 +77,7 @@ impl IOStream {
                     created = true;
                 }
 
-                File::options().append(true).open(path)
+                File::options().append(true).open(path)?
             }
         };
 
@@ -84,10 +87,7 @@ impl IOStream {
             format!("\n{}", content)
         };
 
-        match file {
-            Ok(mut f) => f.write_all(content.as_bytes()),
-            Err(e) => Err(e),
-        }
+        file.write_all(content.as_bytes())
     }
 }
 
