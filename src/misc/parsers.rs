@@ -6,7 +6,7 @@ use super::models::{
 pub fn parse_input(input: &str) -> Result<IOStream, CommandParseError> {
     let parsed = parse_chars(input);
     if parsed.is_empty() {
-        return Ok(IOStream::new_empty());
+        return Ok(IOStream::default());
     }
 
     let mut filename: Option<String> = None;

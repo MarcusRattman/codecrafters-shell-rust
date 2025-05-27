@@ -4,7 +4,7 @@ use std::{
     path::Path,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct IOStream {
     stdout: Option<String>,
     stderr: Option<String>,
@@ -29,13 +29,6 @@ impl IOStream {
 
     pub fn from_options(stdout: Option<String>, stderr: Option<String>) -> Self {
         Self { stdout, stderr }
-    }
-
-    pub fn new_empty() -> Self {
-        Self {
-            stdout: None,
-            stderr: None,
-        }
     }
 
     pub fn get_stdout(&self) -> Option<String> {

@@ -40,7 +40,7 @@ pub fn exec_command(mut command: Vec<String>) -> Result<IOStream, CommandParseEr
         "cd" => {
             let cd = cd_command(args);
             match cd {
-                Ok(_) => Ok(IOStream::new_empty()),
+                Ok(_) => Ok(IOStream::default()),
                 Err(e) => Err(CommandParseError::ComposableError(e)),
             }
         }

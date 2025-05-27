@@ -7,7 +7,7 @@ pub fn echo_command(args: Vec<String>) -> IOStream {
 }
 
 pub fn cd_command(args: Vec<String>) -> Result<(), IOError> {
-    let home = env::var("HOME").unwrap();
+    let home = env::var("HOME").unwrap_or_else(|_| "/".to_string());
     let args = args.join("");
 
     let path = if args.trim() == "~" {
