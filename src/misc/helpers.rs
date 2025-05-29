@@ -1,5 +1,6 @@
 use super::commands::{cd_command, echo_command, pwd_command, run_binary, type_command};
 use super::models::{CommandParseError, IOStream, IOStreamType, WriteMode};
+use crossterm::terminal::disable_raw_mode;
 
 use std::io::Error;
 use std::process::exit;
@@ -25,7 +26,12 @@ pub fn exec_command(mut command: Vec<String>) -> Result<IOStream, CommandParseEr
 
     match cmd.as_str() {
         "exit" => {
-            let code: i32 = args[0].parse().unwrap_or(-1);
+            let code: i32 = args
+                .first()
+                .unwrap_or(&String::from("-1"))
+                .parse()
+                .unwrap_or(-1);
+            disable_raw_mode().unwrap();
             exit(code);
         }
         "echo" => Ok(echo_command(args)),
