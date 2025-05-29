@@ -29,7 +29,7 @@ fn main() -> io::Result<()> {
                     if suggestions.len() > 0 {
                         execute!(stdout(), MoveToColumn(2), Clear(ClearType::UntilNewLine))?;
                         input = suggestions.first().unwrap().to_string();
-                        print!("{}", input);
+                        print!("{} ", input);
                         stdout().flush()?;
                     }
                 }
