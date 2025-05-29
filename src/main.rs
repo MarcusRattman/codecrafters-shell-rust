@@ -11,8 +11,6 @@ fn main() -> io::Result<()> {
     enable_raw_mode()?;
 
     let mut input = String::new();
-
-    println!();
     print!("$ ");
     stdout().flush()?;
 
