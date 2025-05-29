@@ -33,6 +33,19 @@ fn main() -> io::Result<()> {
                         stdout().flush()?;
                     }
                 }
+                KeyCode::Enter => {
+                    let result = parse_input(&input);
+
+                    match result {
+                        Ok(stream) => {
+                            if let Some(s) = stream.print() {
+                                print!("{}", s);
+                                stdout().flush()?;
+                            }
+                        }
+                        Err(e) => println!("{}", e),
+                    }
+                }
                 KeyCode::Char(c) => {
                     input.push(c);
                     print!("{}", c);
@@ -45,16 +58,5 @@ fn main() -> io::Result<()> {
             },
             _ => disable_raw_mode()?,
         }
-
-        // let result = parse_input(&input);
-
-        // match result {
-        //     Ok(stream) => {
-        //         if let Some(s) = stream.print() {
-        //             println!("{}", s);
-        //         }
-        //     }
-        //     Err(e) => println!("{}", e),
-        // }
     }
 }
