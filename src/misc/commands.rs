@@ -6,6 +6,8 @@ pub fn echo_command(args: Vec<String>) -> IOStream {
     IOStream::new(&result, "")
 }
 
+//test
+
 pub fn cd_command(args: Vec<String>) -> Result<(), IOError> {
     let home = env::var("HOME").unwrap_or_else(|_| "/".to_string());
     let args = args.join("");
