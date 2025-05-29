@@ -1,5 +1,5 @@
 mod misc;
-use crossterm::cursor::MoveToColumn;
+use crossterm::cursor::{MoveLeft, MoveToColumn};
 use crossterm::event::{read, Event, KeyCode, KeyEvent};
 use crossterm::execute;
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType};
@@ -33,21 +33,35 @@ fn main() -> io::Result<()> {
                         stdout().flush()?;
                     }
                 }
+                KeyCode::Backspace => {
+                    if !input.is_empty() {
+                        input.pop();
+                        execute!(stdout(), MoveLeft(1), Clear(ClearType::UntilNewLine))?;
+                        stdout().flush()?;
+                    }
+                }
                 KeyCode::Enter => {
+                    println!();
+                    execute!(stdout(), MoveToColumn(0))?;
                     let result = parse_input(&input);
 
                     match result {
                         Ok(stream) => {
                             if let Some(s) = stream.print() {
-                                print!("{}", s);
-                                stdout().flush()?;
+                                s.lines().for_each(|l| {
+                                    println!("{}", l);
+                                    execute!(stdout(), MoveToColumn(0)).unwrap();
+                                });
                             }
                         }
                         Err(e) => {
-                            print!("{}", e);
-                            stdout().flush()?;
+                            println!("{}", e);
                         }
                     }
+
+                    input.clear();
+                    print!("$ ");
+                    stdout().flush()?;
                 }
                 KeyCode::Char(c) => {
                     input.push(c);
