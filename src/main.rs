@@ -43,7 +43,10 @@ fn main() -> io::Result<()> {
                                 stdout().flush()?;
                             }
                         }
-                        Err(e) => println!("{}", e),
+                        Err(e) => {
+                            print!("{}", e);
+                            stdout().flush()?;
+                        }
                     }
                 }
                 KeyCode::Char(c) => {
