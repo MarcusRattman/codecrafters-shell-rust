@@ -19,5 +19,7 @@ fn main() {
             }
             Err(e) => println!("{}", e),
         }
+
+        // TODO test reading file string 1 by 1 with print
     }
 }
